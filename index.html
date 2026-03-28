@@ -2095,7 +2095,9 @@ loadState().then(state => {
       const todayPct = (TODAY - START) / 864e5 / TOTAL;
       const stubWidth = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lw'));
       const viewable = scrollWrapper.clientWidth - stubWidth;
-      const scrollTarget = (todayPct * scrollInner.scrollWidth) - (viewable * 0.15) - stubWidth;
+      const d90Pct = (D90 - START) / 864e5 / TOTAL;
+      const midPct = (todayPct + d90Pct) / 2;
+      const scrollTarget = (midPct * scrollInner.scrollWidth) - (viewable * 0.5);
       scrollWrapper.scrollLeft = Math.max(0, scrollTarget);
     }, 50);
   }

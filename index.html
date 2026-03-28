@@ -168,7 +168,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 .zoom-btn {
   width: 28px;
@@ -681,37 +682,15 @@ body {
   </span>
 </div>
 
-<!-- LEGEND + ZOOM -->
-<div class="legend-row">
-  <div class="legend">
-    <div class="li"><div class="li-sw" style="background:var(--g);"></div>Complete</div>
-    <div class="li-div"></div>
-    <div class="li"><div class="li-sw" style="background:var(--g-light);"></div>High Confidence</div>
-    <div class="li"><div class="li-sw" style="background:var(--amber);"></div>Medium Confidence</div>
-    <div class="li"><div class="li-sw" style="background:var(--orange);"></div>Medium-Low Confidence</div>
-    <div class="li"><div class="li-sw" style="background:var(--red);"></div>Active Blocker</div>
-    <div class="li"><div class="li-sw" style="background:var(--teal);"></div>Integration &amp; QA</div>
-    <div class="li-div"></div>
-    <div class="li">
-      <div class="li-line" style="background:var(--today-c);opacity:.8;"></div><span id="legend-today">Today</span>
-    </div>
-    <div class="li">
-      <div class="li-line" style="background:repeating-linear-gradient(90deg,var(--d90-c) 0,var(--d90-c) 4px,transparent 4px,transparent 8px);"></div>90-Day Mark (Jun 1)
-    </div>
-    <div class="li-div"></div>
-    <div class="li">
-      <div class="li-line" style="background:repeating-linear-gradient(90deg,#FF8D6E 0,#FF8D6E 4px,transparent 4px,transparent 8px);"></div><span id="legend-beta">Beta Target</span>
-    </div>
-    <div class="li-div"></div>
-    <div class="li"><div class="li-diamond"></div>Milestone</div>
-  </div>
-  <div class="zoom-controls" id="zoom-controls">
-    <button class="zoom-btn" onclick="setZoom(currentZoom - 0.25)" title="Zoom out">&minus;</button>
-    <span class="zoom-level" id="zoom-level">100%</span>
-    <button class="zoom-btn" onclick="setZoom(currentZoom + 0.25)" title="Zoom in">+</button>
-    <button class="zoom-btn" onclick="setZoom(1)" title="Reset zoom">&#8634;</button>
-  </div>
+<!-- ZOOM CONTROLS -->
+<div class="zoom-controls" id="zoom-controls">
+  <button class="zoom-btn" onclick="setZoom(currentZoom - 0.25)" title="Zoom out">&minus;</button>
+  <span class="zoom-level" id="zoom-level">100%</span>
+  <button class="zoom-btn" onclick="setZoom(currentZoom + 0.25)" title="Zoom in">+</button>
+  <button class="zoom-btn" onclick="setZoom(1)" title="Reset zoom">&#8634;</button>
 </div>
+<span id="legend-today" style="display:none;"></span>
+<span id="legend-beta" style="display:none;"></span>
 
 <!-- CHART -->
 <div class="chart-shell" id="chart-shell">

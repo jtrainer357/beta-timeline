@@ -523,10 +523,31 @@ body {
   font-family: inherit;
 }
 .add-bullet:hover { color: var(--g); }
-.save-ind {
+.top-actions {
   position: fixed;
   top: 16px;
   right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+.undo-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--txt-s);
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.undo-btn:hover { color: var(--g); border-color: var(--g); }
+.undo-btn:active { background: var(--g-pale); }
+.save-ind {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10.5px;
   font-weight: 500;
@@ -535,7 +556,6 @@ body {
   border: 1px solid var(--brd);
   border-radius: 100px;
   padding: 6px 16px;
-  z-index: 100;
   transition: all .25s;
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
@@ -597,22 +617,42 @@ body {
 .tab.archived.active { opacity: 1; }
 
 /* ── ADD ROW BUTTON ──────────────────────── */
+.add-row-row {
+  display: flex;
+  border-bottom: 1px solid var(--brd);
+  min-height: 24px;
+}
+.add-row-stub {
+  width: var(--lw);
+  flex-shrink: 0;
+  border-right: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  padding: 2px 14px;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: white;
+}
 .add-row-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--brd);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--txt-s);
   cursor: pointer;
-  padding: 3px 14px;
-  border: none;
-  background: none;
-  font-family: inherit;
-  transition: color .12s;
-  border-bottom: 1px solid var(--brd);
-  width: 100%;
+  transition: all .12s;
+  padding: 0;
+  line-height: 1;
 }
-.add-row-btn:hover { color: var(--g); }
+.add-row-btn:hover { color: var(--g); border-color: var(--g); background: var(--g-pale); }
+.add-row-track { flex: 1; }
 
 /* ── GRID LINES (rendered in overlay via JS) ── */
 </style>
@@ -703,7 +743,10 @@ body {
   <div class="tab archived" data-tab="rich" onclick="switchTab('rich')">Rich</div>
 </div>
 
-<div class="save-ind" id="save-ind">Auto-saved</div>
+<div class="top-actions">
+  <button class="undo-btn" id="undo-btn" onclick="doUndo()" title="Undo (Cmd+Z)">&#8617; Undo</button>
+  <div class="save-ind" id="save-ind">Auto-saved</div>
+</div>
 
 <script>
 // ── CONFIGURATION ─────────────────────────────────
@@ -1277,7 +1320,7 @@ const TABS = {
     const S = {
       design: '#8CA7A2',
       eng: '#3D8F8A',
-      compliance: '#FF8D6E',
+      compliance: '#E8875F',
       onboard: '#3A7CA5',
       critical: '#D94040',
     };
@@ -1587,10 +1630,14 @@ function attachMilestoneHandlers(msEl, i) {
 }
 
 function addRow(gi) {
-  // Default: 2-week bar starting at TODAY, using the first bar's color in the group or teal
+  pushUndo();
+  // Default: 2-week bar using the swimlane's dominant color (most common non-critical bar color)
   const group = currentGroups[gi];
-  const defaultColor = (group.rows.length > 0 && group.rows[0].bars.length > 0)
-    ? group.rows[0].bars[0].color : '#8CA7A2';
+  const colorCounts = {};
+  group.rows.forEach(r => r.bars.forEach(b => {
+    if (b.color !== '#D94040') { colorCounts[b.color] = (colorCounts[b.color] || 0) + 1; }
+  }));
+  const defaultColor = Object.keys(colorCounts).sort((a,b) => colorCounts[b] - colorCounts[a])[0] || '#8CA7A2';
   const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
   const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
   const newRow = {
@@ -1642,11 +1689,11 @@ function renderChart(tabKey) {
     });
 
     // Add row button per group
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-row-btn';
-    addBtn.textContent = '+ Add task';
-    addBtn.addEventListener('click', () => addRow(gi));
-    body.appendChild(addBtn);
+    const addRowRow = document.createElement('div');
+    addRowRow.className = 'add-row-row';
+    addRowRow.innerHTML = `<div class="add-row-stub"><button class="add-row-btn" title="Add task">+</button></div><div class="add-row-track"></div>`;
+    addRowRow.querySelector('.add-row-btn').addEventListener('click', () => addRow(gi));
+    body.appendChild(addRowRow);
   });
 
   // Milestone row
@@ -1805,6 +1852,30 @@ function addBullet(cardId) {
 }
 
 // ══════════════════════════════════════════════════════
+// ── UNDO SYSTEM ─────────────────────────────────────
+const _undoStack = [];
+const MAX_UNDO = 30;
+
+function pushUndo() {
+  const state = getState();
+  _undoStack.push(JSON.stringify(state));
+  if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+}
+
+function doUndo() {
+  if (_undoStack.length === 0) return;
+  const prev = JSON.parse(_undoStack.pop());
+  applyState(prev);
+  schedSave();
+}
+
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    doUndo();
+  }
+});
+
 // ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
 // ══════════════════════════════════════════════════════
 const validTabs = ['jay','cait','rich','syd'];
@@ -1914,8 +1985,12 @@ function applyState(state) {
   _lastSavedHash = hashState(state);
 }
 
+let _undoTimer = null;
 function schedSave() {
   clearTimeout(_saveTimer);
+  if (!_undoTimer) {
+    _undoTimer = setTimeout(() => { pushUndo(); _undoTimer = null; }, 50);
+  }
   saveInd.textContent = '\u25cf Saving\u2026';
   saveInd.className = 'save-ind saving';
   _saveTimer = setTimeout(doSave, 400);

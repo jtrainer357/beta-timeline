@@ -1869,10 +1869,50 @@ document.addEventListener('keydown', (e) => {
 const validTabs = ['jay','cait','rich','syd'];
 let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Syd' };
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'syd';
-function apiUrl() {
-  const base = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app' : '';
-  return base + '/api/state?tab=' + activeTab;
+
+// ── STORAGE LAYER ──────────────────────────────────
+// To upgrade to Supabase: set these two values and add the Supabase JS CDN
+const SUPABASE_URL = '';  // e.g. 'https://xyz.supabase.co'
+const SUPABASE_KEY = '';  // anon/public key
+let _supabase = null;
+
+function storageKey() { return 'gantt-state-' + activeTab; }
+
+function initSupabase() {
+  if (SUPABASE_URL && SUPABASE_KEY && typeof supabase !== 'undefined') {
+    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('[Gantt] Using Supabase for persistence');
+  } else {
+    console.log('[Gantt] Using localStorage for persistence');
+  }
 }
+
+async function loadState() {
+  if (_supabase) {
+    try {
+      const { data } = await _supabase.from('gantt_state').select('state').eq('key', storageKey()).single();
+      return data?.state || null;
+    } catch { return null; }
+  }
+  try {
+    const raw = localStorage.getItem(storageKey());
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+async function saveState(state) {
+  if (_supabase) {
+    try {
+      await _supabase.from('gantt_state').upsert({ key: storageKey(), state, updated_at: new Date().toISOString() });
+      return true;
+    } catch { return false; }
+  }
+  try {
+    localStorage.setItem(storageKey(), JSON.stringify(state));
+    return true;
+  } catch { return false; }
+}
+
 const saveInd = document.getElementById('save-ind');
 let _saveTimer = null;
 let _pollTimer = null;
@@ -1987,35 +2027,30 @@ function schedSave() {
   _saveTimer = setTimeout(doSave, 400);
 }
 
-function doSave() {
+async function doSave() {
   const state = getState();
   const h = hashState(state);
   if (h===_lastSavedHash) { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind saved'; return; }
-  fetch(apiUrl(), { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state) })
-    .then(r => {
-      if (r.ok) {
-        _lastSavedHash = h;
-        const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-        saveInd.textContent = '\u2713 Saved '+t; saveInd.className = 'save-ind saved';
-        setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
-      } else { saveInd.textContent='\u2715 Save failed'; saveInd.className='save-ind error'; }
-    })
-    .catch(() => { saveInd.textContent='\u2715 Offline'; saveInd.className='save-ind error'; });
+  const ok = await saveState(state);
+  if (ok) {
+    _lastSavedHash = h;
+    const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    saveInd.textContent = '\u2713 Saved '+t; saveInd.className = 'save-ind saved';
+    setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
+  } else {
+    saveInd.textContent='\u2715 Save failed'; saveInd.className='save-ind error';
+  }
 }
 
-function pollForChanges() {
-  fetch(apiUrl(), { cache:'no-store' })
-    .then(r => { if (r.status===200) return r.json(); return null; })
-    .then(state => {
-      if (!state) return;
-      const h = hashState(state);
-      if (h!==_lastSavedHash) {
-        applyState(state);
-        saveInd.textContent='\u21bb Synced'; saveInd.className='save-ind synced';
-        setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 2000);
-      }
-    })
-    .catch(() => {});
+async function pollForChanges() {
+  const state = await loadState();
+  if (!state) return;
+  const h = hashState(state);
+  if (h!==_lastSavedHash) {
+    applyState(state);
+    saveInd.textContent='\u21bb Synced'; saveInd.className='save-ind synced';
+    setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 2000);
+  }
 }
 
 document.addEventListener('mouseup', () => { if (_saveTimer===null) setTimeout(schedSave, 200); });
@@ -2023,9 +2058,9 @@ document.addEventListener('mouseup', () => { if (_saveTimer===null) setTimeout(s
 // ══════════════════════════════════════════════════════
 // ── TAB SWITCHING ────────────────────────────────────
 // ══════════════════════════════════════════════════════
-function switchTab(tab) {
+async function switchTab(tab) {
   if (tab===activeTab) return;
-  doSave();
+  await doSave();
   activeTab = tab;
   location.hash = tab;
   _lastSavedHash = '';
@@ -2034,14 +2069,10 @@ function switchTab(tab) {
   renderHeader(tab);
   renderFootnotes(tab);
   saveInd.textContent = '\u25cf Loading\u2026'; saveInd.className = 'save-ind saving';
-  fetch(apiUrl(), { cache:'no-store' })
-    .then(r => { if (r.status===200) return r.json(); return null; })
-    .then(state => {
-      if (state) applyState(state);
-      saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
-      setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 1500);
-    })
-    .catch(() => { saveInd.textContent='\u2715 Offline'; saveInd.className='save-ind error'; });
+  const state = await loadState();
+  if (state) applyState(state);
+  saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
+  setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 1500);
 }
 
 // ══════════════════════════════════════════════════════
@@ -2052,13 +2083,11 @@ renderChart(activeTab);
 renderHeader(activeTab);
 renderFootnotes(activeTab);
 
-fetch(apiUrl(), { cache:'no-store' })
-  .then(r => { if (r.status===200) return r.json(); return null; })
-  .then(state => {
-    if (state) applyState(state);
-    _pollTimer = setInterval(pollForChanges, 5000);
-  })
-  .catch(() => { _pollTimer = setInterval(pollForChanges, 5000); });
+initSupabase();
+loadState().then(state => {
+  if (state) applyState(state);
+  if (_supabase) _pollTimer = setInterval(pollForChanges, 5000);
+});
 
 // ── EDITABLE TAB NAMES ──────────────────────────────
 document.querySelectorAll('.tab').forEach(tabEl => {

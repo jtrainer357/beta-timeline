@@ -30,7 +30,7 @@
   --txt-m:      #5A6364;  /* Text Secondary */
   --txt-s:      #8CA7A2;  /* Core — muted text */
   --lw:         228px;
-  --rh:         52px;
+  --rh:         40px;
   --today-c:    #004952;  /* Growth */
   --d90-c:      #D94040;  /* Urgent Red */
 }
@@ -110,7 +110,13 @@ body {
 .blocker-banner strong { font-weight: 700; }
 .blocker-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
 
-/* ── LEGEND ───────────────────────────────── */
+/* ── LEGEND ROW ───────────────────────────── */
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
 .legend {
   display: flex;
   align-items: center;
@@ -120,7 +126,7 @@ body {
   border: 1px solid var(--brd);
   border-radius: 16px;
   padding: 10px 18px;
-  margin-bottom: 20px;
+  flex: 1;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .li {
@@ -157,6 +163,40 @@ body {
   flex-shrink: 0;
 }
 
+/* ── ZOOM CONTROLS ────────────────────────── */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.zoom-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--brd);
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--g);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: background .12s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.zoom-btn:hover { background: var(--g-pale); }
+.zoom-level {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--txt-m);
+  min-width: 40px;
+  text-align: center;
+}
+
 /* ── CHART SHELL ──────────────────────────── */
 .chart-shell {
   background: white;
@@ -166,6 +206,32 @@ body {
   position: relative;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
+
+/* ── SCROLL WRAPPER ──────────────────────── */
+.scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
+}
+.scroll-inner {
+  min-width: 100%;
+  position: relative;
+}
+
+/* ── STICKY LEFT STUBS ───────────────────── */
+.month-label-stub,
+.row-stub,
+.grp-stub,
+.ms-stub {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+.month-label-stub { background: var(--bg-hdr); }
+.grp-stub { background: var(--bg-alt); }
+.row-stub { background: white; }
+.c-row:hover .row-stub { background: rgba(253,251,247,1); }
+.ms-stub { background: var(--bg-hdr); }
 
 /* ── MONTH HEADER ─────────────────────────── */
 .month-hdr {
@@ -214,7 +280,7 @@ body {
 .grp-stub {
   width: var(--lw);
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 4px 14px;
   border-right: 1px solid var(--brd);
 }
 .grp-label {
@@ -243,7 +309,7 @@ body {
 .row-stub {
   width: var(--lw);
   flex-shrink: 0;
-  padding: 8px 14px;
+  padding: 4px 14px;
   border-right: 1px solid var(--brd);
   display: flex;
   align-items: center;
@@ -485,7 +551,7 @@ body {
   left: 0;
   right: 0;
   height: 38px;
-  background: rgba(42, 123, 136, 0.60);
+  background: rgba(42, 123, 136, 0.55);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   display: flex;
@@ -514,6 +580,21 @@ body {
 .tab { border: 1px solid rgba(255,255,255,.25); border-bottom: none; background: rgba(42, 123, 136, 0.40); }
 .tab:hover { color: rgba(255,255,255,.85); background: rgba(42, 123, 136, 0.55); }
 .tab.active { color: var(--txt); background: var(--bg-alt); font-weight: 600; border-color: transparent; }
+.archived-label {
+  display: flex;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  padding: 0 8px 0 0;
+  margin-top: 5px;
+}
+.tab.archived { opacity: 0.5; }
+.tab.archived:hover { opacity: 0.75; }
+.tab.archived.active { opacity: 1; }
 
 /* ── GRID LINES (rendered in overlay via JS) ── */
 </style>
@@ -542,51 +623,66 @@ body {
   </span>
 </div>
 
-<!-- LEGEND -->
-<div class="legend">
-  <div class="li"><div class="li-sw" style="background:var(--g);"></div>Complete</div>
-  <div class="li-div"></div>
-  <div class="li"><div class="li-sw" style="background:var(--g-light);"></div>High Confidence</div>
-  <div class="li"><div class="li-sw" style="background:var(--amber);"></div>Medium Confidence</div>
-  <div class="li"><div class="li-sw" style="background:var(--orange);"></div>Medium-Low Confidence</div>
-  <div class="li"><div class="li-sw" style="background:var(--red);"></div>Active Blocker</div>
-  <div class="li"><div class="li-sw" style="background:var(--teal);"></div>Integration &amp; QA</div>
-  <div class="li-div"></div>
-  <div class="li">
-    <div class="li-line" style="background:var(--today-c);opacity:.8;"></div><span id="legend-today">Today</span>
+<!-- LEGEND + ZOOM -->
+<div class="legend-row">
+  <div class="legend">
+    <div class="li"><div class="li-sw" style="background:var(--g);"></div>Complete</div>
+    <div class="li-div"></div>
+    <div class="li"><div class="li-sw" style="background:var(--g-light);"></div>High Confidence</div>
+    <div class="li"><div class="li-sw" style="background:var(--amber);"></div>Medium Confidence</div>
+    <div class="li"><div class="li-sw" style="background:var(--orange);"></div>Medium-Low Confidence</div>
+    <div class="li"><div class="li-sw" style="background:var(--red);"></div>Active Blocker</div>
+    <div class="li"><div class="li-sw" style="background:var(--teal);"></div>Integration &amp; QA</div>
+    <div class="li-div"></div>
+    <div class="li">
+      <div class="li-line" style="background:var(--today-c);opacity:.8;"></div><span id="legend-today">Today</span>
+    </div>
+    <div class="li">
+      <div class="li-line" style="background:repeating-linear-gradient(90deg,var(--d90-c) 0,var(--d90-c) 4px,transparent 4px,transparent 8px);"></div>90-Day Mark (Jun 1)
+    </div>
+    <div class="li-div"></div>
+    <div class="li">
+      <div class="li-line" style="background:repeating-linear-gradient(90deg,#FF8D6E 0,#FF8D6E 4px,transparent 4px,transparent 8px);"></div><span id="legend-beta">Beta Target</span>
+    </div>
+    <div class="li-div"></div>
+    <div class="li"><div class="li-diamond"></div>Milestone</div>
   </div>
-  <div class="li">
-    <div class="li-line" style="background:repeating-linear-gradient(90deg,var(--d90-c) 0,var(--d90-c) 4px,transparent 4px,transparent 8px);"></div>90-Day Mark (Jun 1)
+  <div class="zoom-controls" id="zoom-controls">
+    <button class="zoom-btn" onclick="setZoom(currentZoom - 0.25)" title="Zoom out">&minus;</button>
+    <span class="zoom-level" id="zoom-level">100%</span>
+    <button class="zoom-btn" onclick="setZoom(currentZoom + 0.25)" title="Zoom in">+</button>
+    <button class="zoom-btn" onclick="setZoom(1)" title="Reset zoom">&#8634;</button>
   </div>
-  <div class="li-div"></div>
-  <div class="li">
-    <div class="li-line" style="background:repeating-linear-gradient(90deg,#FF8D6E 0,#FF8D6E 4px,transparent 4px,transparent 8px);"></div><span id="legend-beta">Beta Target</span>
-  </div>
-  <div class="li-div"></div>
-  <div class="li"><div class="li-diamond"></div>Milestone</div>
 </div>
 
 <!-- CHART -->
 <div class="chart-shell" id="chart-shell">
+  <div class="scroll-wrapper" id="scroll-wrapper">
+    <div class="scroll-inner" id="scroll-inner">
 
-  <!-- MONTH HEADER -->
-  <div class="month-hdr">
-    <div class="month-label-stub">Track</div>
-    <div class="month-track" id="month-track"></div>
+      <!-- MONTH HEADER -->
+      <div class="month-hdr">
+        <div class="month-label-stub">Track</div>
+        <div class="month-track" id="month-track"></div>
+      </div>
+
+      <!-- CHART BODY -->
+      <div id="chart-body"></div>
+
+    </div>
   </div>
-
-  <!-- CHART BODY -->
-  <div id="chart-body"></div>
-
 </div>
 
 <!-- FOOTNOTES (rendered dynamically per tab) -->
 <div class="footnotes" id="footnotes"></div>
 
 <div class="tab-bar">
-  <div class="tab active" data-tab="jay" onclick="switchTab('jay')">Jay</div>
-  <div class="tab" data-tab="cait" onclick="switchTab('cait')">Cait</div>
-  <div class="tab" data-tab="rich" onclick="switchTab('rich')">Rich</div>
+  <div class="tab active" data-tab="syd" onclick="switchTab('syd')">Syd</div>
+  <div style="flex:1;"></div>
+  <span class="archived-label">ARCHIVED</span>
+  <div class="tab archived" data-tab="jay" onclick="switchTab('jay')">Jay</div>
+  <div class="tab archived" data-tab="cait" onclick="switchTab('cait')">Cait</div>
+  <div class="tab archived" data-tab="rich" onclick="switchTab('rich')">Rich</div>
 </div>
 
 <div class="save-ind" id="save-ind">Auto-saved</div>
@@ -634,6 +730,27 @@ const d90Lbl = document.createElement('div');
 d90Lbl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;pointer-events:none;z-index:10;`;
 d90Lbl.innerHTML = `<div style="position:absolute;top:6px;left:4px;font-size:9.5px;font-weight:700;color:var(--d90-c);white-space:nowrap;font-family:'IBM Plex Sans',sans-serif;">90-DAY</div>`;
 mtrack.appendChild(d90Lbl);
+
+// ── ZOOM ────────────────────────────────────────────
+let currentZoom = 1;
+const scrollWrapper = document.getElementById('scroll-wrapper');
+const scrollInner = document.getElementById('scroll-inner');
+
+function setZoom(z) {
+  z = Math.round(Math.max(1, Math.min(5, z)) * 100) / 100;
+  currentZoom = z;
+  scrollInner.style.minWidth = (100 * z) + '%';
+  document.getElementById('zoom-level').textContent = Math.round(z * 100) + '%';
+}
+
+scrollWrapper.addEventListener('wheel', (e) => {
+  if (e.ctrlKey) {
+    e.preventDefault();
+    const delta = -e.deltaY * 0.01;
+    setZoom(currentZoom + delta);
+    schedSave();
+  }
+}, { passive: false });
 
 // ── HELPERS ──────────────────────────────────────────
 function pctFromDate(d) { return (d - START) / 864e5 / TOTAL * 100; }
@@ -1131,6 +1248,144 @@ const TABS = {
         ]}
       ]
     };
+  })(),
+  syd: (() => {
+    const SC = {
+      high:     { label: 'HIGH',     bg: '#004952' },
+      medium:   { label: 'MEDIUM',   bg: '#CC6F4E' },
+      medlow:   { label: 'MED-LOW',  bg: '#B84A2E' },
+      critical: { label: 'CRITICAL', bg: '#A52D2D' },
+    };
+    const S = {
+      design: '#8CA7A2',
+      eng: '#3D8F8A',
+      compliance: '#FF8D6E',
+      onboard: '#3A7CA5',
+      critical: '#D94040',
+    };
+    return {
+      groups: [
+        // SWIMLANE 1 — PRODUCT DESIGN
+        { label: 'Swimlane 1 \u2014 Product Design (Jay)', rows: [
+          { name: 'Design system + component specs', sub: 'Design system + tokens',
+            bars: [{ s:'2026-03-30', e:'2026-04-11', color:S.design, conf:SC.high,
+              tip:'Token definitions, component specs, interaction patterns. Foundation for all UI.' }] },
+          { name: 'IA architecture + flow diagrams', sub: 'IA + canvas architecture',
+            bars: [{ s:'2026-03-30', e:'2026-04-08', color:S.design, conf:SC.high,
+              tip:'Canvas architecture, navigation model, JTBD phase mapping. Dynamic canvas spec.' }] },
+          { name: 'Job 1 & 2 wireframes', sub: 'Appointments + prep flows',
+            bars: [{ s:'2026-04-07', e:'2026-04-18', color:S.design, conf:SC.high,
+              tip:'Scheduling views, daily dashboard, Items Needing Attention, patient summary wireframes.' }] },
+          { name: 'Job 3 wireframes (AI note flow)', sub: 'AI note gen + HITL review',
+            bars: [{ s:'2026-04-14', e:'2026-04-25', color:S.design, conf:SC.medium,
+              tip:'SOAP note generation UI, HITL review flow, provenance badges, clinical summary side-by-side. Core differentiator.' }] },
+          { name: 'Job 4 + cross-cutting wireframes', sub: 'Payments + Patient 360',
+            bars: [{ s:'2026-04-21', e:'2026-05-05', color:S.design, conf:SC.medium,
+              tip:'Payment flows, fee schedule config, Patient 360 tabs, global search, longitudinal record.' }] },
+          { name: 'Design QA + polish', sub: 'QA, responsive, transitions',
+            bars: [{ s:'2026-05-05', e:'2026-05-26', color:S.design, conf:SC.medlow,
+              tip:'Pixel-level QA against specs, responsive refinement, dynamic canvas transitions.' }] },
+          { name: 'Provider onboarding UX', sub: 'Onboarding flows',
+            bars: [{ s:'2026-05-19', e:'2026-05-29', color:S.design, conf:SC.medlow,
+              tip:'First-run experience, practice setup wizard, data import confirmation flows.' }] },
+        ]},
+        // SWIMLANE 2 — ENGINEERING
+        { label: 'Swimlane 2 \u2014 Engineering (EJ + Vince \u00b7 2 FTE)', rows: [
+          { name: 'Wk 1: Foundation', sub: 'Supabase + Auth + RLS',
+            bars: [{ s:'2026-04-14', e:'2026-04-18', color:S.critical, conf:SC.critical,
+              tip:'Supabase HIPAA project, Auth + MFA, DB schema, RLS policies, encryption config, seed data. CRITICAL PATH \u2014 blocks everything.' }] },
+          { name: 'Wk 2: Core workflows', sub: 'Appointments + dashboard',
+            bars: [{ s:'2026-04-21', e:'2026-04-25', color:S.eng, conf:SC.high,
+              tip:'Appointments, scheduling, state machine, in-app notifications (Supabase Realtime), daily schedule, Items Needing Attention. 9 dev-days.' }] },
+          { name: 'Wk 3: AI integration', sub: 'LLM streaming + SOAP notes',
+            bars: [{ s:'2026-04-28', e:'2026-05-02', color:S.critical, conf:SC.critical,
+              tip:'LLM streaming via Vercel AI SDK, SOAP note gen, review/approval, data extraction, RAG + pgvector, patient summary. CRITICAL PATH. 20 dev-days.' }] },
+          { name: 'Wk 4: Payments + records', sub: 'Stripe + Patient 360',
+            bars: [{ s:'2026-05-05', e:'2026-05-09', color:S.eng, conf:SC.medium,
+              tip:'Stripe integration, fee schedule, longitudinal record, Patient 360 with AI actions, global search. 14 dev-days.' }] },
+          { name: 'Wk 5: Hardening + polish', sub: 'Audit + load test + pen test',
+            bars: [{ s:'2026-05-12', e:'2026-05-16', color:S.eng, conf:SC.medlow,
+              tip:'Audit logging, RLS audit, load testing, pen test, responsive polish, analytics dashboard, E2E testing.' }] },
+          { name: 'Bug fixes + stabilization', sub: 'Stabilization buffer',
+            bars: [{ s:'2026-05-19', e:'2026-05-29', color:S.eng, conf:SC.medlow,
+              tip:'Bug fixes, edge case handling, performance tuning, provider-reported issues from early access.' }] },
+        ]},
+        // SWIMLANE 3 — COMPLIANCE & LEGAL
+        { label: 'Swimlane 3 \u2014 Compliance & Legal (Cait + Attorney)', rows: [
+          { name: 'BAA procurement (all vendors)', sub: 'BAAs: Supabase, OpenAI, Anthropic',
+            bars: [{ s:'2026-03-30', e:'2026-04-18', color:S.critical, conf:SC.critical,
+              tip:'Start ALL requests Day 1. OpenAI: 1\u20132 days. Supabase: submit immediately (real blocker). Anthropic: 2\u20134 week sales cycle. CRITICAL PATH.' }] },
+          { name: 'Risk assessment + privacy policies', sub: 'Risk assessment + policies',
+            bars: [{ s:'2026-04-07', e:'2026-04-28', color:S.compliance, conf:SC.medium,
+              tip:'HIPAA risk assessment (NIST 800-66 Rev 2), privacy policy drafting, AI-specific consent forms, 42 CFR Part 2 addendum if needed.' }] },
+          { name: 'Security policies + breach plan', sub: 'Security docs + breach plan',
+            bars: [{ s:'2026-04-28', e:'2026-05-12', color:S.compliance, conf:SC.medlow,
+              tip:'Security policies, breach notification plan, contingency plan. Stack-specific documentation.' }] },
+          { name: 'Provider training + IR drill', sub: 'Training materials + IR drill',
+            bars: [{ s:'2026-05-12', e:'2026-05-26', color:S.compliance, conf:SC.medlow,
+              tip:'Provider training materials, incident response drill, final compliance review.' }] },
+          { name: 'Final compliance sign-off', sub: 'Sign-off',
+            bars: [{ s:'2026-05-26', e:'2026-05-29', color:S.compliance, conf:SC.medlow,
+              tip:'All BAAs executed, all policies finalized, training complete, system ready for PHI.' }] },
+        ]},
+        // SWIMLANE 4 — PROVIDER DATA ONBOARDING
+        { label: 'Swimlane 4 \u2014 Provider Data Onboarding (Cait + Maren)', rows: [
+          { name: 'Define migration schema + tooling', sub: 'Import schema + ETL tooling',
+            bars: [{ s:'2026-05-05', e:'2026-05-16', color:S.onboard, conf:SC.medlow,
+              tip:'Define patient data import schema, build ETL/import tooling, map source EHR fields to Clarity BH schema, validation rules.' }] },
+          { name: 'Provider recruitment + data collection', sub: 'Recruit + collect data',
+            bars: [{ s:'2026-05-12', e:'2026-05-22', color:S.onboard, conf:SC.medlow,
+              tip:'Recruit beta cohort (10\u201315 providers), collect existing patient data exports, consent for data migration, practice setup details.' }] },
+          { name: 'Data import + validation', sub: 'Import + validate + verify',
+            bars: [{ s:'2026-05-19', e:'2026-05-27', color:S.onboard, conf:SC.medlow,
+              tip:'Import patient records, run validation, provider review of imported data, fix discrepancies, verify RLS isolation per provider.' }] },
+          { name: 'Provider training + go-live prep', sub: 'Training + go-live prep',
+            bars: [{ s:'2026-05-26', e:'2026-05-30', color:S.onboard, conf:SC.medlow,
+              tip:'Live training sessions, practice setup verification, fee schedule config, final system walkthrough.' }] },
+        ]},
+      ],
+      milestones: [
+        { date:'2026-04-18', name:'BAAs Secured', sub:'Apr 18' },
+        { date:'2026-05-02', name:'AI Validated', sub:'May 2' },
+        { date:'2026-05-29', name:'Compliance Ready', sub:'May 29' },
+        { date:'2026-06-01', name:'Beta Launch', sub:'Jun 1' },
+      ],
+      betaDate: '2026-06-01',
+      betaMsIndex: 3,
+      msLineColors: { 3: '#D94040' },
+      header: {
+        title: 'Beta <strong>Timeline Hypothesis</strong>',
+        sub: 'Living document \u00b7 Updated weekly as new information comes in \u00b7 ' + todayFull,
+        pills: ['Start: March 30, 2026','2 Eng + 1 Design + 1 Product','Beta Target: June 1, 2026']
+      },
+      blocker: '<strong>Active Blocker \u2014 BAA Procurement:</strong> Supabase HIPAA project activation requires Team plan + HIPAA add-on request. Not fully self-serve. This is the true critical path blocker \u2014 engineering cannot begin until the HIPAA project is provisioned. Start request Day 1 (March 30). Target resolution by April 18.',
+      footnotes: [
+        { title:'Confidence Tier Definitions', para:null, items:[
+          '<strong>High:</strong> Spec complete, approach defined, no major unresolved dependencies',
+          '<strong>Medium:</strong> Scope understood; one or more open design or integration questions remain',
+          '<strong>Medium-Low:</strong> Core scope clear but significant technical unknowns exist \u2014 estimate most likely to shift after AI integration validates',
+          '<strong>Blocker:</strong> External dependency actively gating downstream build work'] },
+        { title:'Key Assumptions Driving This Estimate', para:null, items:[
+          '2.0 engineering FTE sustained with ~50% task parallelization',
+          'BAA procurement completes by end of Week 3 (Apr 18) \u2014 Supabase is the real blocker',
+          'Vercel Fluid Compute provides 800s max function duration (confirmed for Pro plan)',
+          'Stripe confirmed for payments; no BAA required under HIPAA payment processing exemption',
+          'AI vendor: OpenAI GPT-4o-mini primary, Claude Haiku 4.5 fallback \u2014 both with ZDR',
+          'No SMS or email messaging in MVP \u2014 all notifications delivered in-app via Supabase Realtime',
+          '18+ adult patients only \u2014 no minor consent or parental access controls required',
+          '42 CFR Part 2 scope TBD based on whether beta providers treat co-occurring SUD',
+          'Design runs 2 weeks ahead of engineering to prevent spec-blocked sprints'] },
+        { title:'Why June 1 Is a Hypothesis, Not a Commitment', items:null,
+          para:'This is a living timeline hypothesis, not a committed Gantt. At 2 engineering FTE across 5 build weeks, the total engineering capacity is ~67 developer-days \u2014 tight but achievable if the critical path holds. Three items gate the entire timeline: (1) Supabase HIPAA project activation and BAA, (2) Auth + RLS foundation, and (3) AI streaming integration. A delay on any of these cascades through everything downstream. The June 1 target gives Dan what he\u2019s hiring a timeline for \u2014 confidence tiers and decision visibility \u2014 not false precision.' },
+        { title:'What Beta Is Designed to Validate', para:null, items:[
+          'Is the dynamic canvas paradigm adopted by solo outpatient providers?',
+          'Does AI-assisted pre-session briefing materially reduce cognitive load?',
+          'Can the Substrate graph support end-to-end JTBD completion reliably?',
+          'Is cash-pay billing complete enough to close a real encounter?',
+          'Does AI coding acceleration hold under real build conditions at this complexity?',
+          'Can 10\u201315 providers operate on real PHI with full HIPAA compliance on Vercel + Supabase?'] }
+      ]
+    };
   })()
 };
 
@@ -1328,7 +1583,7 @@ function renderChart(tabKey) {
       let barsHTML = '';
       row.bars.forEach((bar, bi) => {
         const left = p(dt(bar.s)), width = pw(dt(bar.s), dt(bar.e));
-        const badge = bar.conf ? `<span class="conf-badge" style="background:${bar.conf.bg};">${bar.conf.label}</span>` : '';
+        const badge = '';
         const isTbd = (bar.color === TBD_COLOR);
         const barStyle = isTbd
           ? `left:${left};width:${width};background:var(--bg-alt);border:1.5px dashed ${TBD_COLOR};`
@@ -1404,7 +1659,7 @@ function renderChart(tabKey) {
     overlay.appendChild(vl);
   });
 
-  shell.appendChild(overlay);
+  scrollInner.appendChild(overlay);
 
   // Attach interaction handlers
   document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(makeEditable);
@@ -1501,8 +1756,9 @@ function addBullet(cardId) {
 // ══════════════════════════════════════════════════════
 // ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
 // ══════════════════════════════════════════════════════
-const validTabs = ['jay','cait','rich'];
-let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'jay';
+const validTabs = ['jay','cait','rich','syd'];
+let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Syd' };
+let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'syd';
 function apiUrl() { return '/api/state?tab=' + activeTab; }
 const saveInd = document.getElementById('save-ind');
 let _saveTimer = null;
@@ -1532,11 +1788,11 @@ function getState() {
     const para=card.querySelector('p');
     fnState.push({ title, items, para:para?para.textContent:null });
   });
-  return { barState, trackState, grpState, msState, fnState, saved:new Date().toISOString() };
+  return { barState, trackState, grpState, msState, fnState, zoom:currentZoom, tabNames, saved:new Date().toISOString() };
 }
 
 function hashState(state) {
-  return JSON.stringify(state.barState)+JSON.stringify(state.trackState)+JSON.stringify(state.grpState)+JSON.stringify(state.msState)+JSON.stringify(state.fnState);
+  return JSON.stringify(state.barState)+JSON.stringify(state.trackState)+JSON.stringify(state.grpState)+JSON.stringify(state.msState)+JSON.stringify(state.fnState)+(state.zoom||1)+JSON.stringify(state.tabNames||{});
 }
 
 function applyState(state) {
@@ -1594,6 +1850,14 @@ function applyState(state) {
         });
       }
       if (fn.para!==null&&para) para.textContent=fn.para;
+    });
+  }
+  if (state.zoom !== undefined) { setZoom(state.zoom); } else { setZoom(1); }
+  if (state.tabNames) {
+    Object.assign(tabNames, state.tabNames);
+    document.querySelectorAll('.tab').forEach(t => {
+      const key = t.dataset.tab;
+      if (tabNames[key]) t.textContent = tabNames[key];
     });
   }
   _lastSavedHash = hashState(state);
@@ -1679,7 +1943,35 @@ fetch(apiUrl(), { cache:'no-store' })
   })
   .catch(() => { _pollTimer = setInterval(pollForChanges, 5000); });
 
-// Zoom removed — chart uses percentage layout that fills viewport
+// ── EDITABLE TAB NAMES ──────────────────────────────
+document.querySelectorAll('.tab').forEach(tabEl => {
+  tabEl.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const tabKey = tabEl.dataset.tab;
+    const original = tabEl.textContent;
+    const inp = document.createElement('input');
+    inp.style.cssText = 'background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:4px;color:white;font-family:inherit;font-size:12.5px;font-weight:500;padding:0 8px;outline:none;width:80px;text-align:center;height:24px;';
+    inp.value = original;
+    tabEl.textContent = '';
+    tabEl.appendChild(inp);
+    inp.focus();
+    inp.select();
+    const done = () => {
+      const newName = inp.value.trim() || original;
+      tabEl.textContent = newName;
+      tabNames[tabKey] = newName;
+      schedSave();
+    };
+    inp.addEventListener('blur', done);
+    inp.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); }
+      if (ev.key === 'Escape') { tabEl.textContent = original; }
+    });
+    inp.addEventListener('mousedown', (ev) => ev.stopPropagation());
+    inp.addEventListener('click', (ev) => ev.stopPropagation());
+  });
+});
 </script>
 </body>
 </html>

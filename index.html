@@ -1733,27 +1733,25 @@ function renderChart(tabKey) {
   tl.style.cssText = `position:absolute;left:${p(TODAY)};top:0;bottom:0;width:2px;background:var(--today-c);opacity:.45;`;
   overlay.appendChild(tl);
 
-  const d90MatchesBeta = Math.abs(D90 - BETA) < 864e5;
   const dl = document.createElement('div');
   dl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;width:2px;opacity:.85;background:repeating-linear-gradient(to bottom,var(--d90-c) 0,var(--d90-c) 6px,transparent 6px,transparent 12px);`;
-  if (d90MatchesBeta) dl.style.display = 'none';
   overlay.appendChild(dl);
 
   betaLine = document.createElement('div');
   betaLine.id = 'beta-line';
   betaLine.style.cssText = `position:absolute;left:${p(BETA)};top:0;bottom:0;width:2px;opacity:.8;background:repeating-linear-gradient(to bottom,#FF8D6E 0,#FF8D6E 6px,transparent 6px,transparent 12px);`;
-  if (d90MatchesBeta) betaLine.style.display = 'none';
   overlay.appendChild(betaLine);
 
   deltaEl = document.createElement('div'); deltaEl.id = 'delta-region'; overlay.appendChild(deltaEl);
   deltaLabel = document.createElement('div'); deltaLabel.id = 'delta-label'; overlay.appendChild(deltaLabel);
   updateDelta();
 
-  // Hide 90-DAY label in month header when it overlaps with beta
-  document.getElementById('d90-lbl').style.display = d90MatchesBeta ? 'none' : '';
+  // Always show 90-DAY label
+  document.getElementById('d90-lbl').style.display = '';
 
-  // Milestone dotted lines with tab-specific colors
+  // Milestone dotted lines (skip the beta milestone — D90 line covers it)
   currentMilestones.forEach((m, i) => {
+    if (i === currentBetaMsIndex) return;
     const vl = document.createElement('div');
     vl.className = 'vl-ms'; vl.id = 'ms-vline-'+i;
     vl.style.left = p(dt(m.date));

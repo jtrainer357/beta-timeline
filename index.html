@@ -788,6 +788,7 @@ mtrack.appendChild(todayLbl);
 document.getElementById('legend-today').textContent = 'Today (' + todayStr + ')';
 
 const d90Lbl = document.createElement('div');
+d90Lbl.id = 'd90-lbl';
 d90Lbl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;pointer-events:none;z-index:10;`;
 d90Lbl.innerHTML = `<div style="position:absolute;top:6px;left:4px;font-size:9.5px;font-weight:700;color:var(--d90-c);white-space:nowrap;font-family:'IBM Plex Sans',sans-serif;">90-DAY</div>`;
 mtrack.appendChild(d90Lbl);
@@ -1747,6 +1748,9 @@ function renderChart(tabKey) {
   deltaEl = document.createElement('div'); deltaEl.id = 'delta-region'; overlay.appendChild(deltaEl);
   deltaLabel = document.createElement('div'); deltaLabel.id = 'delta-label'; overlay.appendChild(deltaLabel);
   updateDelta();
+
+  // Hide 90-DAY label in month header when it overlaps with beta
+  document.getElementById('d90-lbl').style.display = d90MatchesBeta ? 'none' : '';
 
   // Milestone dotted lines with tab-specific colors
   currentMilestones.forEach((m, i) => {

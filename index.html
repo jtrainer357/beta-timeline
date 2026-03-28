@@ -1732,13 +1732,16 @@ function renderChart(tabKey) {
   tl.style.cssText = `position:absolute;left:${p(TODAY)};top:0;bottom:0;width:2px;background:var(--today-c);opacity:.45;`;
   overlay.appendChild(tl);
 
+  const d90MatchesBeta = Math.abs(D90 - BETA) < 864e5;
   const dl = document.createElement('div');
   dl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;width:2px;opacity:.85;background:repeating-linear-gradient(to bottom,var(--d90-c) 0,var(--d90-c) 6px,transparent 6px,transparent 12px);`;
+  if (d90MatchesBeta) dl.style.display = 'none';
   overlay.appendChild(dl);
 
   betaLine = document.createElement('div');
   betaLine.id = 'beta-line';
   betaLine.style.cssText = `position:absolute;left:${p(BETA)};top:0;bottom:0;width:2px;opacity:.8;background:repeating-linear-gradient(to bottom,#FF8D6E 0,#FF8D6E 6px,transparent 6px,transparent 12px);`;
+  if (d90MatchesBeta) betaLine.style.display = 'none';
   overlay.appendChild(betaLine);
 
   deltaEl = document.createElement('div'); deltaEl.id = 'delta-region'; overlay.appendChild(deltaEl);
@@ -1855,8 +1858,10 @@ function addBullet(cardId) {
 // ── UNDO SYSTEM ─────────────────────────────────────
 const _undoStack = [];
 const MAX_UNDO = 30;
+let _isUndoing = false;
 
 function pushUndo() {
+  if (_isUndoing) return;
   const state = getState();
   _undoStack.push(JSON.stringify(state));
   if (_undoStack.length > MAX_UNDO) _undoStack.shift();
@@ -1864,9 +1869,11 @@ function pushUndo() {
 
 function doUndo() {
   if (_undoStack.length === 0) return;
+  _isUndoing = true;
   const prev = JSON.parse(_undoStack.pop());
   applyState(prev);
   schedSave();
+  _isUndoing = false;
 }
 
 document.addEventListener('keydown', (e) => {

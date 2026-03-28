@@ -1869,7 +1869,10 @@ document.addEventListener('keydown', (e) => {
 const validTabs = ['jay','cait','rich','syd'];
 let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Syd' };
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'syd';
-function apiUrl() { return '/api/state?tab=' + activeTab; }
+function apiUrl() {
+  const base = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app' : '';
+  return base + '/api/state?tab=' + activeTab;
+}
 const saveInd = document.getElementById('save-ind');
 let _saveTimer = null;
 let _pollTimer = null;

@@ -2085,7 +2085,20 @@ renderFootnotes(activeTab);
 
 initSupabase();
 loadState().then(state => {
-  if (state) applyState(state);
+  if (state) {
+    applyState(state);
+  } else {
+    // Default zoom: frame the active timeline (a few weeks before today through just past 90-day)
+    setZoom(2);
+    // Scroll so TODAY is near the left edge
+    setTimeout(() => {
+      const todayPct = (TODAY - START) / 864e5 / TOTAL;
+      const stubWidth = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lw'));
+      const viewable = scrollWrapper.clientWidth - stubWidth;
+      const scrollTarget = (todayPct * scrollInner.scrollWidth) - (viewable * 0.15) - stubWidth;
+      scrollWrapper.scrollLeft = Math.max(0, scrollTarget);
+    }, 50);
+  }
   if (_supabase) _pollTimer = setInterval(pollForChanges, 5000);
 });
 

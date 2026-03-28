@@ -714,7 +714,7 @@ body {
 <div class="footnotes" id="footnotes"></div>
 
 <div class="tab-bar">
-  <div class="tab active" data-tab="syd" onclick="switchTab('syd')">Syd</div>
+  <div class="tab active" data-tab="syd" onclick="switchTab('syd')">Beta (Revised)</div>
   <div style="flex:1;"></div>
   <span class="archived-label">ARCHIVED</span>
   <div class="tab archived" data-tab="jay" onclick="switchTab('jay')">Jay</div>
@@ -1867,7 +1867,7 @@ document.addEventListener('keydown', (e) => {
 // ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
 // ══════════════════════════════════════════════════════
 const validTabs = ['jay','cait','rich','syd'];
-let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Syd' };
+let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)' };
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'syd';
 
 // ── STORAGE LAYER ──────────────────────────────────

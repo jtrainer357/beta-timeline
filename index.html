@@ -403,7 +403,7 @@ body {
 .brh::after { content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 2px; height: 10px; border-right: 1px solid rgba(255,255,255,.4); border-left: 1px solid rgba(255,255,255,.4); }
 .ms-diamond { cursor: grab; transition: transform .1s; }
 .ms-diamond.dragging { cursor: grabbing; }
-.vl-ms { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--g); opacity: .25; pointer-events: none; }
+.vl-ms { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2.5px dashed var(--g); opacity: .3; pointer-events: none; }
 .ii { background: white; border: 1.5px solid var(--g-mid); border-radius: 4px; font-family: inherit; font-size: inherit; font-weight: inherit; color: inherit; padding: 2px 6px; outline: none; width: 100%; }
 
 /* ── VERTICAL MARKERS ─────────────────────── */
@@ -595,6 +595,24 @@ body {
 .tab.archived { opacity: 0.5; }
 .tab.archived:hover { opacity: 0.75; }
 .tab.archived.active { opacity: 1; }
+
+/* ── ADD ROW BUTTON ──────────────────────── */
+.add-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--txt-s);
+  cursor: pointer;
+  padding: 3px 14px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  transition: color .12s;
+  border-bottom: 1px solid var(--brd);
+  width: 100%;
+}
+.add-row-btn:hover { color: var(--g); }
 
 /* ── GRID LINES (rendered in overlay via JS) ── */
 </style>
@@ -1358,7 +1376,7 @@ const TABS = {
         sub: 'Living document \u00b7 Updated weekly as new information comes in \u00b7 ' + todayFull,
         pills: ['Start: March 30, 2026','2 Eng + 1 Design + 1 Product','Beta Target: June 1, 2026']
       },
-      blocker: '<strong>Active Blocker \u2014 BAA Procurement:</strong> Supabase HIPAA project activation requires Team plan + HIPAA add-on request. Not fully self-serve. This is the true critical path blocker \u2014 engineering cannot begin until the HIPAA project is provisioned. Start request Day 1 (March 30). Target resolution by April 18.',
+      blocker: null,
       footnotes: [
         { title:'Confidence Tier Definitions', para:null, items:[
           '<strong>High:</strong> Spec complete, approach defined, no major unresolved dependencies',
@@ -1410,12 +1428,19 @@ function updateDelta() {
   if (!deltaEl || !deltaLabel || !betaLine) return;
   const d90pct  = ((D90 - START)/864e5/TOTAL*100);
   const betapct = ((BETA - START)/864e5/TOTAL*100);
-  const midpct  = (d90pct + betapct) / 2;
   const weeks   = Math.round((BETA - D90)/864e5/7);
-  deltaEl.style.cssText = `position:absolute;left:${d90pct.toFixed(3)}%;width:${(betapct-d90pct).toFixed(3)}%;top:0;bottom:0;background:rgba(26,111,168,.06);`;
-  deltaLabel.style.cssText = `position:absolute;left:${midpct.toFixed(3)}%;top:10px;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:#FF8D6E;white-space:nowrap;letter-spacing:.05em;font-family:'IBM Plex Sans',sans-serif;`;
-  deltaLabel.textContent = '\u2190 ~' + weeks + ' wk delta \u2192';
-  betaLine.style.left = betapct.toFixed(3) + '%';
+  if (weeks <= 0) {
+    deltaEl.style.cssText = 'display:none;';
+    deltaLabel.style.cssText = 'display:none;';
+    betaLine.style.display = 'none';
+  } else {
+    const midpct  = (d90pct + betapct) / 2;
+    deltaEl.style.cssText = `position:absolute;left:${d90pct.toFixed(3)}%;width:${(betapct-d90pct).toFixed(3)}%;top:0;bottom:0;background:rgba(26,111,168,.06);`;
+    deltaLabel.style.cssText = `position:absolute;left:${midpct.toFixed(3)}%;top:10px;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:#FF8D6E;white-space:nowrap;letter-spacing:.05em;font-family:'IBM Plex Sans',sans-serif;`;
+    deltaLabel.textContent = '\u2190 ~' + weeks + ' wk delta \u2192';
+    betaLine.style.display = '';
+    betaLine.style.left = betapct.toFixed(3) + '%';
+  }
   document.getElementById('legend-beta').textContent = 'Beta Target (' + BETA.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ')';
 }
 
@@ -1561,6 +1586,25 @@ function attachMilestoneHandlers(msEl, i) {
   });
 }
 
+function addRow(gi) {
+  // Default: 2-week bar starting at TODAY, using the first bar's color in the group or teal
+  const group = currentGroups[gi];
+  const defaultColor = (group.rows.length > 0 && group.rows[0].bars.length > 0)
+    ? group.rows[0].bars[0].color : '#8CA7A2';
+  const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
+  const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
+  const newRow = {
+    name: 'New task', sub: '',
+    bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: defaultColor, conf: null, tip: 'New task' }]
+  };
+  group.rows.push(newRow);
+  // Re-render to pick up the new row with all handlers
+  renderChart(activeTab);
+  renderHeader(activeTab);
+  renderFootnotes(activeTab);
+  schedSave();
+}
+
 function renderChart(tabKey) {
   const tab = TABS[tabKey];
   currentGroups = tab.groups;
@@ -1596,6 +1640,13 @@ function renderChart(tabKey) {
       rowEl.innerHTML = `<div class="row-stub"><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div></div><div class="row-track">${barsHTML}</div>`;
       body.appendChild(rowEl);
     });
+
+    // Add row button per group
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-row-btn';
+    addBtn.textContent = '+ Add task';
+    addBtn.addEventListener('click', () => addRow(gi));
+    body.appendChild(addBtn);
   });
 
   // Milestone row

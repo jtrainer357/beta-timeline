@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Nitro · Beta Timeline Hypothesis</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── Tebra Brand Palette ──────────────────── */
+  --g:          #004952;  /* Growth — primary brand */
+  --g-dark:     #003A42;  /* Growth dark */
+  --g-mid:      #FF8D6E;  /* Vitality — accent/action */
+  --g-light:    #3D8F8A;  /* Growth light — high confidence */
+  --g-pale:     rgba(0,73,82,0.06);
+  --amber:      #FF8D6E;  /* Vitality Coral — medium confidence */
+  --amber-bg:   rgba(255,141,110,0.1);
+  --orange:     #D95F3F;  /* Darker coral — medium-low */
+  --orange-bg:  rgba(217,95,63,0.08);
+  --red:        #D94040;  /* Urgent Red */
+  --red-bg:     rgba(217,64,64,0.08);
+  --teal:       #8CA7A2;  /* Core — integration/QA */
+  --teal-bg:    rgba(140,167,162,0.12);
+  --navy:       #2B2B2B;  /* Synapse — milestones */
+  --bg:         #FFFFFF;
+  --bg-alt:     #F6F3EB;  /* Backbone — warm off-white */
+  --bg-hdr:     #EDE8DF;  /* Backbone darker tint */
+  --brd:        #E0D3C8;  /* Care — borders/dividers */
+  --txt:        #2B2B2B;  /* Synapse */
+  --txt-m:      #5A6364;  /* Text Secondary */
+  --txt-s:      #8CA7A2;  /* Core — muted text */
+  --lw:         228px;
+  --rh:         52px;
+  --today-c:    #004952;  /* Growth */
+  --d90-c:      #D94040;  /* Urgent Red */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--bg-alt);
+  color: var(--txt);
+  font-size: 13px;
+  padding: 32px 36px 58px;
+  min-width: 1160px;
+}
+
+/* ── HEADER ───────────────────────────────── */
+.hd {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.hd-left .eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--g-mid);
+  margin-bottom: 5px;
+}
+.hd-left h1 {
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--g);
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+.hd-left h1 strong {
+  font-weight: 700;
+}
+.hd-left .sub {
+  font-size: 12px;
+  color: var(--txt-m);
+}
+.hd-right {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+}
+.pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 100px;
+  background: rgba(0,73,82,0.06);
+  color: var(--g);
+  border: 1px solid var(--brd);
+}
+
+/* ── BLOCKER BANNER ───────────────────────── */
+.blocker-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--red-bg);
+  border: 1px solid rgba(217,64,64,0.2);
+  border-left: 4px solid var(--red);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  font-size: 12.5px;
+  color: var(--red);
+  line-height: 1.55;
+}
+.blocker-banner strong { font-weight: 700; }
+.blocker-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+/* ── LEGEND ───────────────────────────────── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 16px;
+  padding: 10px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--txt-m);
+  font-weight: 500;
+  padding: 4px 14px 4px 0;
+}
+.li-sw {
+  width: 22px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.li-line {
+  width: 22px;
+  height: 3px;
+  flex-shrink: 0;
+}
+.li-div {
+  width: 1px;
+  height: 18px;
+  background: var(--brd);
+  margin: 0 10px 0 4px;
+}
+.li-diamond {
+  width: 12px;
+  height: 12px;
+  background: var(--g);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* ── CHART SHELL ──────────────────────────── */
+.chart-shell {
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ── MONTH HEADER ─────────────────────────── */
+.month-hdr {
+  display: flex;
+  background: var(--bg-hdr);
+  border-bottom: 2px solid var(--brd);
+  position: relative;
+  height: 48px;
+}
+.month-label-stub {
+  width: var(--lw);
+  flex-shrink: 0;
+  border-right: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--txt-s);
+}
+.month-track {
+  flex: 1;
+  position: relative;
+}
+.month-blk {
+  position: absolute;
+  top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--txt-m);
+  border-right: 1px solid var(--brd);
+}
+
+/* ── GROUP HEADER ─────────────────────────── */
+.grp-hdr {
+  display: flex;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--brd);
+}
+.grp-stub {
+  width: var(--lw);
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-right: 1px solid var(--brd);
+}
+.grp-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--g);
+}
+.grp-track {
+  flex: 1;
+  background: var(--bg-alt);
+}
+
+/* ── CHART ROW ────────────────────────────── */
+.c-row {
+  display: flex;
+  border-bottom: 1px solid var(--brd);
+  min-height: var(--rh);
+  transition: background .12s;
+}
+.c-row:hover { background: rgba(0,73,82,0.03); }
+.c-row:last-child { border-bottom: none; }
+
+.row-stub {
+  width: var(--lw);
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-right: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+}
+.row-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--txt);
+  line-height: 1.3;
+}
+.row-sub {
+  font-size: 10.5px;
+  color: var(--txt-s);
+  font-weight: 400;
+  margin-top: 2px;
+}
+.row-track {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* ── BAR ──────────────────────────────────── */
+.bar {
+  position: absolute;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  cursor: grab;
+  transition: filter .12s;
+  overflow: visible;
+}
+.bar:hover { filter: brightness(.88); }
+.bar-txt {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.conf-badge {
+  position: absolute;
+  top: -9px;
+  right: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  padding: 2px 8px;
+  border-radius: 100px;
+  color: white;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── TOOLTIP ──────────────────────────────── */
+.bar-tip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--g);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  white-space: nowrap;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,73,82,.25);
+}
+.bar-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--g);
+}
+.bar:hover .bar-tip { display: block; }
+.bar.dragging { cursor: grabbing; opacity: .85; box-shadow: 0 3px 12px rgba(0,0,0,.18); z-index: 30; }
+.bar.dragging .bar-tip { display: none !important; }
+.brh { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 2; }
+.brh::after { content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 2px; height: 10px; border-right: 1px solid rgba(255,255,255,.4); border-left: 1px solid rgba(255,255,255,.4); }
+.ms-diamond { cursor: grab; transition: transform .1s; }
+.ms-diamond.dragging { cursor: grabbing; }
+.vl-ms { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px dashed var(--g); opacity: .25; pointer-events: none; }
+.ii { background: white; border: 1.5px solid var(--g-mid); border-radius: 4px; font-family: inherit; font-size: inherit; font-weight: inherit; color: inherit; padding: 2px 6px; outline: none; width: 100%; }
+
+/* ── VERTICAL MARKERS ─────────────────────── */
+.v-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  z-index: 20;
+}
+.today-line { background: var(--today-c); opacity: .5; }
+.d90-line {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--d90-c) 0, var(--d90-c) 5px,
+    transparent 5px, transparent 10px
+  );
+  opacity: .85;
+}
+
+/* ── MILESTONE ROW ────────────────────────── */
+.ms-row {
+  display: flex;
+  border-top: 2px solid var(--brd);
+  min-height: 56px;
+  background: var(--bg-hdr);
+}
+.ms-stub {
+  width: var(--lw);
+  flex-shrink: 0;
+  border-right: 1px solid var(--brd);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+}
+.ms-track { flex: 1; position: relative; }
+
+.milestone {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: translateX(-50%) translateY(-50%);
+}
+.ms-diamond {
+  width: 14px; height: 14px;
+  background: var(--g);
+  transform: rotate(45deg);
+}
+.ms-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--g);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.ms-date {
+  font-size: 10px;
+  color: var(--txt-m);
+  white-space: nowrap;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── FOOTNOTES ────────────────────────────── */
+.footnotes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 22px;
+}
+.fn-card {
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.fn-card h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--g);
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--g);
+}
+.fn-card ul {
+  padding-left: 14px;
+}
+.fn-card li, .fn-card p {
+  font-size: 12px;
+  color: var(--txt-m);
+  line-height: 1.65;
+  margin-bottom: 1px;
+}
+.fn-card li::marker { color: var(--g-mid); }
+.fn-card li { cursor: text; }
+.fn-card p { cursor: text; }
+.add-bullet {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--txt-s);
+  cursor: pointer;
+  padding: 4px 0 2px 14px;
+  transition: color .12s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.add-bullet:hover { color: var(--g); }
+.save-ind {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--txt-s);
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  padding: 6px 16px;
+  z-index: 100;
+  transition: all .25s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.save-ind.saving { color: var(--g-mid); border-color: var(--g-mid); box-shadow: 0 2px 8px rgba(255,141,110,.15); }
+.save-ind.saved { color: var(--g); border-color: var(--g); }
+.save-ind.synced { color: var(--g-light); border-color: var(--g-light); }
+.save-ind.error { color: var(--red); border-color: var(--red); }
+
+/* ── TAB BAR ─────────────────────────────── */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  background: rgba(42, 123, 136, 0.60);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  display: flex;
+  align-items: stretch;
+  z-index: 300;
+  padding: 0 16px;
+  gap: 6px;
+  box-shadow: 0 -2px 8px rgba(0,0,0,.1);
+}
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,.9);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all .15s;
+  border-radius: 8px 8px 0 0;
+  margin-top: 5px;
+  letter-spacing: .2px;
+}
+.tab { border: 1px solid rgba(255,255,255,.25); border-bottom: none; background: rgba(42, 123, 136, 0.40); }
+.tab:hover { color: rgba(255,255,255,.85); background: rgba(42, 123, 136, 0.55); }
+.tab.active { color: var(--txt); background: var(--bg-alt); font-weight: 600; border-color: transparent; }
+
+/* ── GRID LINES (rendered in overlay via JS) ── */
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="hd-left">
+    <div class="eyebrow">Project Nitro</div>
+    <h1 id="hd-title">Beta <strong>Timeline Hypothesis</strong></h1>
+    <div class="sub" id="hd-sub">Living document · Updated weekly as new information comes in</div>
+  </div>
+  <div class="hd-right" id="hd-pills">
+    <div class="pill">Sprint 1 Start: March 3, 2026</div>
+    <div class="pill">Engineering: 3.5 FTE</div>
+    <div class="pill">Original 90-Day Target: June 1, 2026</div>
+  </div>
+</div>
+
+<!-- BLOCKER BANNER -->
+<div class="blocker-banner" id="blocker-banner">
+  <span class="blocker-icon">&#9888;</span>
+  <span id="blocker-text">
+    <strong>Active Blocker — DevOps Provisioning:</strong> Service deployment collaboration is operating below required velocity. Back-and-forth is replacing true collaboration. Escalation in progress. Resolution required by approximately April 25 to maintain projected timeline. If unresolved, everything in Phase 3 and beyond slides.
+  </span>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="li"><div class="li-sw" style="background:var(--g);"></div>Complete</div>
+  <div class="li-div"></div>
+  <div class="li"><div class="li-sw" style="background:var(--g-light);"></div>High Confidence</div>
+  <div class="li"><div class="li-sw" style="background:var(--amber);"></div>Medium Confidence</div>
+  <div class="li"><div class="li-sw" style="background:var(--orange);"></div>Medium-Low Confidence</div>
+  <div class="li"><div class="li-sw" style="background:var(--red);"></div>Active Blocker</div>
+  <div class="li"><div class="li-sw" style="background:var(--teal);"></div>Integration &amp; QA</div>
+  <div class="li-div"></div>
+  <div class="li">
+    <div class="li-line" style="background:var(--today-c);opacity:.8;"></div><span id="legend-today">Today</span>
+  </div>
+  <div class="li">
+    <div class="li-line" style="background:repeating-linear-gradient(90deg,var(--d90-c) 0,var(--d90-c) 4px,transparent 4px,transparent 8px);"></div>90-Day Mark (Jun 1)
+  </div>
+  <div class="li-div"></div>
+  <div class="li">
+    <div class="li-line" style="background:repeating-linear-gradient(90deg,#FF8D6E 0,#FF8D6E 4px,transparent 4px,transparent 8px);"></div><span id="legend-beta">Beta Target</span>
+  </div>
+  <div class="li-div"></div>
+  <div class="li"><div class="li-diamond"></div>Milestone</div>
+</div>
+
+<!-- CHART -->
+<div class="chart-shell" id="chart-shell">
+
+  <!-- MONTH HEADER -->
+  <div class="month-hdr">
+    <div class="month-label-stub">Track</div>
+    <div class="month-track" id="month-track"></div>
+  </div>
+
+  <!-- CHART BODY -->
+  <div id="chart-body"></div>
+
+</div>
+
+<!-- FOOTNOTES (rendered dynamically per tab) -->
+<div class="footnotes" id="footnotes"></div>
+
+<div class="tab-bar">
+  <div class="tab active" data-tab="jay" onclick="switchTab('jay')">Jay</div>
+  <div class="tab" data-tab="cait" onclick="switchTab('cait')">Cait</div>
+  <div class="tab" data-tab="rich" onclick="switchTab('rich')">Rich</div>
+</div>
+
+<div class="save-ind" id="save-ind">Auto-saved</div>
+
+<script>
+// ── CONFIGURATION ─────────────────────────────────
+const START   = new Date('2026-03-03');
+const END     = new Date('2026-08-25');
+const TODAY   = new Date(); TODAY.setHours(0,0,0,0);
+const D90     = new Date('2026-06-01');
+const TOTAL   = (END - START) / 864e5;
+
+function p(d)     { return ((d - START) / 864e5 / TOTAL * 100).toFixed(3) + '%'; }
+function pw(s, e) { return ((e - s) / 864e5 / TOTAL * 100).toFixed(3) + '%'; }
+function dt(s)    { return new Date(s); }
+
+// ── MONTH HEADER (static — same for all tabs) ────────
+const months = [
+  ['March',  '2026-03-03', '2026-04-01'],
+  ['April',  '2026-04-01', '2026-05-01'],
+  ['May',    '2026-05-01', '2026-06-01'],
+  ['June',   '2026-06-01', '2026-07-01'],
+  ['July',   '2026-07-01', '2026-08-01'],
+  ['Aug',    '2026-08-01', '2026-08-25'],
+];
+const mtrack = document.getElementById('month-track');
+months.forEach(([lbl, s, e]) => {
+  const d = document.createElement('div');
+  d.className = 'month-blk';
+  d.style.left  = p(dt(s));
+  d.style.width = pw(dt(s), dt(e));
+  d.textContent = lbl;
+  mtrack.appendChild(d);
+});
+
+const todayLbl = document.createElement('div');
+todayLbl.style.cssText = `position:absolute;left:${p(TODAY)};top:0;bottom:0;pointer-events:none;z-index:10;`;
+const todayStr = TODAY.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const todayFull = TODAY.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+todayLbl.innerHTML = `<div style="position:absolute;top:6px;left:4px;font-size:9.5px;font-weight:700;color:var(--today-c);white-space:nowrap;font-family:'IBM Plex Sans',sans-serif;">TODAY</div>`;
+mtrack.appendChild(todayLbl);
+document.getElementById('legend-today').textContent = 'Today (' + todayStr + ')';
+
+const d90Lbl = document.createElement('div');
+d90Lbl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;pointer-events:none;z-index:10;`;
+d90Lbl.innerHTML = `<div style="position:absolute;top:6px;left:4px;font-size:9.5px;font-weight:700;color:var(--d90-c);white-space:nowrap;font-family:'IBM Plex Sans',sans-serif;">90-DAY</div>`;
+mtrack.appendChild(d90Lbl);
+
+// ── HELPERS ──────────────────────────────────────────
+function pctFromDate(d) { return (d - START) / 864e5 / TOTAL * 100; }
+function dateFromPct(pct) {
+  const days = Math.round(Math.max(0, pct / 100 * TOTAL));
+  const d = new Date(START);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function fmtShort(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+
+// ══════════════════════════════════════════════════════
+// ── TAB DATA REGISTRY ────────────────────────────────
+// ══════════════════════════════════════════════════════
+
+// ── JAY'S DATA ───────────────────────────────────────
+const JAY_CONF = {
+  complete:  { label: 'COMPLETE \u2713', bg: '#003A42' },
+  high:      { label: 'HIGH',       bg: '#004952' },
+  medium:    { label: 'MEDIUM',     bg: '#CC6F4E' },
+  medlow:    { label: 'MED-LOW',    bg: '#B84A2E' },
+  blocker:   { label: 'BLOCKER',    bg: '#A52D2D' },
+};
+const JAY_C = {
+  complete: '#004952', high: '#3D8F8A', medium: '#FF8D6E',
+  orange: '#D95F3F', red: '#D94040', teal: '#8CA7A2',
+};
+
+const jayGroups = [
+  { label: 'Phase 1 \u2014 Foundation', rows: [
+    { name: 'Sprint 1 \u00b7 Foundation', sub: 'Spec \u00b7 PRD v3 \u00b7 Research \u00b7 Prototype \u00b7 Seed Data',
+      bars: [{ s:'2026-03-03', e:'2026-03-30', color:JAY_C.complete, conf:JAY_CONF.complete,
+        tip:'JTBD spec \u00b7 PRD v3 \u00b7 3 provider sessions (positive signal) \u00b7 T-shirt sizing exercise \u00b7 Clarity BH seed data \u00b7 Interactive JTBD 5 prototype' }] }
+  ]},
+  { label: 'Phase 2 \u2014 Infrastructure', rows: [
+    { name: '\u26a0 DevOps Resolution', sub: 'Provisioning \u00b7 CDN \u00b7 Deployment scripts',
+      bars: [{ s:'2026-03-31', e:'2026-04-25', color:JAY_C.red, conf:JAY_CONF.blocker,
+        tip:'Required for: service deployment, rapid proto env, CDN setup. Must resolve by Apr 25. Escalation active. Every downstream phase depends on this.' }] },
+    { name: 'Core Infrastructure', sub: 'Auth0 \u00b7 GraphQL \u00b7 Service contracts \u00b7 DB schema',
+      bars: [{ s:'2026-03-31', e:'2026-05-03', color:JAY_C.high, conf:JAY_CONF.high,
+        tip:'Auth0 (2 PRs in progress) \u00b7 GraphQL proof of concept running \u00b7 Seth: API contracts (1\u20132 days) \u00b7 Sarvesh: DB schema after contracts \u00b7 Architecture.md to be defined' }] }
+  ]},
+  { label: 'Phase 3 \u2014 Vertical Slice (Signal #1)', rows: [
+    { name: 'JTBD 5 \u00b7 Prepare for Visit', sub: 'Vertical Slice #1 \u00b7 Substrate + Canvas + Clinical Summary',
+      bars: [{ s:'2026-04-13', e:'2026-05-24', color:JAY_C.high, conf:JAY_CONF.high,
+        tip:'Deepest spec in the platform. LangGraph backend \u00b7 Dynamic canvas rendering \u00b7 Clinical summary UI \u00b7 PHQ-9 / MBC longitudinal data \u00b7 Drives confidence in all downstream estimates.' }] }
+  ]},
+  { label: 'Phase 4 \u2014 Jobs to Be Done', rows: [
+    { name: 'JTBD 1 \u00b7 Scheduling', sub: 'Calendar \u00b7 Appointment management \u00b7 Notifications',
+      bars: [{ s:'2026-04-27', e:'2026-05-24', color:JAY_C.medium, conf:JAY_CONF.medium,
+        tip:'Scope well-defined. Notification architecture TBD. Estimate will sharpen after Vertical Slice #1 completion.' }] },
+    { name: 'JTBD 2 \u00b7 Prepare for Day', sub: 'Daily dashboard \u00b7 Schedule overview \u00b7 Patient flags',
+      bars: [{ s:'2026-05-04', e:'2026-06-01', color:JAY_C.medium, conf:JAY_CONF.medium,
+        tip:'Depends on scheduling foundation. Open question: notification types and delivery mechanism. Likely resolves during JTBD 1 build.' }] },
+    { name: 'JTBD 3 \u00b7 Deliver & Document Care', sub: 'Sully \u00b7 Ambient notes \u00b7 Encounter \u00b7 CPT \u00b7 HITL',
+      bars: [{ s:'2026-05-11', e:'2026-06-28', color:JAY_C.orange, conf:JAY_CONF.medlow,
+        tip:'Most complex JTBD. Sully integration \u00b7 Encounter entity undefined (definition session needed) \u00b7 CPT code logic \u00b7 Human-in-the-loop note review (regulatory) \u00b7 Highest estimate variance.' }] },
+    { name: 'Telehealth \u00b7 Zoom Meetings SDK', sub: 'Vendor decision: week of April 6 \u00b7 Cannot descope',
+      bars: [{ s:'2026-05-11', e:'2026-06-14', color:JAY_C.medium, conf:JAY_CONF.medium,
+        tip:'Zoom Meetings SDK preferred over Video SDK (lower engineering lift). Technical docs incoming. Vendor call w/ engineer: week of Apr 6. Removing telehealth breaks beta signal.' }] }
+  ]},
+  { label: 'Phase 5 \u2014 Billing', rows: [
+    { name: 'JTBD 4 \u00b7 Cash-Pay Billing', sub: 'Stripe \u00b7 CPT config \u00b7 Payment state management',
+      bars: [{ s:'2026-06-01', e:'2026-07-06', color:JAY_C.medium, conf:JAY_CONF.medium,
+        tip:'Stripe confirmed (T-Pay descoped \u2014 T-Pay integration complexity too high for beta). Encounter dependency must be resolved before build begins. CPT code mapping UX still TBD.' }] }
+  ]},
+  { label: 'Phase 6 \u2014 Integration & Beta', rows: [
+    { name: 'Integration, QA & Beta Hardening', sub: 'End-to-end testing \u00b7 Real data \u00b7 Issue resolution',
+      bars: [{ s:'2026-06-29', e:'2026-07-20', color:JAY_C.teal, conf:null,
+        tip:'Full end-to-end testing with real seed data. Identify and resolve critical issues. First real-data encounter completion. Beta provider onboarding prep.' }] }
+  ]}
+];
+
+const jayMilestones = [
+  { date:'2026-06-09', name:'Fold in AI Billing', sub:'Jun 9' },
+  { date:'2026-07-15', name:'Beta', sub:'First provider' },
+  { date:'2026-08-01', name:'MVP \u2192', sub:'TBD post-signal' },
+];
+
+// ── CAIT'S DATA ──────────────────────────────────────
+const CAIT_CONF = {
+  medium:     { label:'MEDIUM',      bg:'#CC6F4E' },
+  low:        { label:'LOW',         bg:'#B84A2E' },
+  inProgress: { label:'IN PROGRESS', bg:'#2D6A4F' },
+  blocked:    { label:'BLOCKER',     bg:'#A52D2D' },
+  resolved:   { label:'RESOLVED',    bg:'#6B8F71' },
+  gate:       { label:'GATE',        bg:'#6D28D9' },
+  atRisk:     { label:'AT RISK',     bg:'#B84A2E' },
+  notStarted: { label:'NOT STARTED', bg:'#3A7CA5' },
+};
+const CAIT_C = {
+  active:'#3D8F8A', newSt:'#3A7CA5', tbd:'#FF8D6E',
+  blocked:'#D94040', done:'#8CA7A2', hold:'#6D28D9', atRisk:'#D95F3F',
+};
+
+const caitGroups = [
+  { label: 'Timeline & Phasing', rows: [
+    { name:'Phase 1: Core Infra + Job 3', sub:'Longitudinal record \u00b7 Patient 360 \u00b7 Session recording \u00b7 AI note gen',
+      bars:[{ s:'2026-04-01', e:'2026-05-06', color:CAIT_C.active, conf:CAIT_CONF.medium,
+        tip:'Longitudinal record, Patient 360 shell, session recording, AI note gen, note review, extraction. MEDIUM confidence.' }] },
+    { name:'Phase 2: Jobs 1, 2, 4, 5', sub:'Appointments \u00b7 Dashboard \u00b7 Payments \u00b7 Cross-cutting',
+      bars:[{ s:'2026-05-15', e:'2026-06-26', color:CAIT_C.newSt, conf:CAIT_CONF.low,
+        tip:'Jobs 1/2/4/5 build. LOW confidence. Timeline Reality Check: With 4.5 engineers and ~8+ man-weeks for infra + Job 3 alone, delivering all 5 jobs by June 30 requires either: (a) parallel build once patterns established, or (b) reduced scope per job. Re-estimation gate will tell us which.' }] }
+  ]},
+  { label: 'Job Readiness', rows: [
+    { name:'Job 3: Deliver Care', sub:'5 reqs \u00b7 12-19 man-weeks \u00b7 2 TBDs',
+      bars:[{ s:'2026-04-01', e:'2026-07-08', color:CAIT_C.active, conf:CAIT_CONF.medium,
+        tip:'MEDIUM confidence. IN PROGRESS. Blocker: AI vendor integration scope (note gen + potential telehealth).' }] },
+    { name:'Job Infra: Core Infrastructure', sub:'3 TBDs \u00b7 Mobile posture blocker',
+      bars:[{ s:'2026-04-01', e:'2026-05-06', color:CAIT_C.active, conf:CAIT_CONF.medium,
+        tip:'MEDIUM confidence. IN PROGRESS. Blocker: Mobile support posture \u2014 which workflows, responsive vs. native.' }] },
+    { name:'Job 1: Book & Manage Appointments', sub:'10 reqs \u00b7 12-25 man-weeks',
+      bars:[{ s:'2026-05-15', e:'2026-07-10', color:CAIT_C.tbd, conf:CAIT_CONF.low,
+        tip:'LOW confidence. NOT STARTED. No blockers listed.' }] },
+    { name:'Job 2: Prep for the Day', sub:'7 reqs \u00b7 9-18 man-weeks \u00b7 2 TBDs',
+      bars:[{ s:'2026-05-22', e:'2026-07-03', color:CAIT_C.tbd, conf:CAIT_CONF.low,
+        tip:"LOW confidence. NOT STARTED. Blocker: Dashboard naming/labeling ('Items Needing Attention')." }] },
+    { name:'Job 4: Get Paid', sub:'8 reqs \u00b7 14-20 man-weeks \u00b7 1 TBD',
+      bars:[{ s:'2026-06-01', e:'2026-07-01', color:CAIT_C.tbd, conf:CAIT_CONF.low,
+        tip:'LOW confidence. NOT STARTED. Blocker: Invoice template fields (amount, invoice #, due date).' }] }
+  ]},
+  { label: 'Outstanding Decisions (10 open)', rows: [
+    { name:'#1 BLOCKER: Permission to build non-scalable', sub:'All Jobs \u00b7 Product/Engineering/Leadership',
+      bars:[{ s:'2026-04-01', e:'2026-06-15', color:CAIT_C.blocked, conf:CAIT_CONF.blocked,
+        tip:'All Jobs. Product/Engineering/Leadership. Without this, engineering will build for scale and June 30 is not achievable. Core Tension: Scalability vs Speed-to-Signal \u2014 this is the single highest-leverage decision for the beta timeline.' }] },
+    { name:'#1 BLOCKER: Refactor commitment', sub:'All Jobs \u00b7 Leadership',
+      bars:[{ s:'2026-04-01', e:'2026-06-15', color:CAIT_C.blocked, conf:CAIT_CONF.blocked,
+        tip:'All Jobs. Leadership. Engineering will not commit to speed without this safety net. Beta success = refactor phase before MVP.' }] },
+    { name:'AI vendor integration scope', sub:'Job 3 \u00b7 Engineering',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job 3. Engineering. Largest integration workstream \u2014 drives Job 3 timeline.' }] },
+    { name:'Patient 360 caching mechanism', sub:'Job Infra \u00b7 Engineering',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job Infra. Engineering. On-demand vs. cached execution model.' }] },
+    { name:'Widget item cap / pagination', sub:'Job 2 \u00b7 Engineering',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job 2. Engineering. Front-end build decision.' }] },
+    { name:'LLM input structure', sub:'Job 3 \u00b7 Product',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job 3. Product. Raw audio vs structured clinical context. Affects note quality and vendor API contract.' }] },
+    { name:'Invoice template fields', sub:'Job 4 \u00b7 Product',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job 4. Product. Template must be fully specified before build.' }] },
+    { name:'Mobile support posture', sub:'Job Infra \u00b7 Design/Engineering',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job Infra. Design/Engineering. Locks ALL front-end architecture.' }] },
+    { name:'In-app notification UX', sub:'Job Infra \u00b7 Design',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job Infra. Design. Must be decided before front-end build.' }] },
+    { name:'Dashboard naming/labeling', sub:'Job 2 \u00b7 Design',
+      bars:[{ s:'2026-04-01', e:'2026-05-31', color:CAIT_C.tbd, conf:CAIT_CONF.notStarted,
+        tip:'Job 2. Design. Visual design placeholder \u2014 needs review.' }] },
+    { name:'\u2713 Payment processor \u2014 Stripe only', sub:'RESOLVED',
+      bars:[{ s:'2026-03-16', e:'2026-03-26', color:CAIT_C.done, conf:CAIT_CONF.resolved,
+        tip:'RESOLVED. Tebra Payments out of scope for beta.' }] }
+  ]},
+  { label: 'Beta Signals Plan (13 signals)', rows: [
+    { name:'Provider edit rate on AI notes', sub:'AI Note Quality',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'AI Note Quality. Proves whether AI note gen is trustworthy enough to save time vs. create rework.' }] },
+    { name:'Time-to-sign', sub:'AI Note Quality',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'AI Note Quality. Core efficiency metric \u2014 must show meaningful time savings vs. manual documentation.' }] },
+    { name:'Hallucination / fabrication rate', sub:'AI Note Quality',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'AI Note Quality. Clinical safety signal \u2014 determines if we can responsibly scale.' }] },
+    { name:'Discrete extraction precision', sub:'Clinical Data',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'Clinical Data. Validates whether longitudinal record can be trusted for downstream use.' }] },
+    { name:'Provider reconciliation behavior', sub:'Clinical Data',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'Clinical Data. Reveals if extraction is useful or creates burden.' }] },
+    { name:'Approve vs heavily rewrite', sub:'Provider Trust',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:"Provider Trust. Trust is the gate to adoption \u2014 if providers don't trust the output, nothing else matters." }] },
+    { name:'Session recording comfort / drop-off', sub:'Provider Trust',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:"Provider Trust. If providers won't record, the entire AI pipeline has no input." }] },
+    { name:'Full encounter completion', sub:'End-to-End',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'End-to-End. The core signal \u2014 does the end-to-end experience work as a coherent product?' }] },
+    { name:'Dashboard/prep engagement', sub:'End-to-End',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:"End-to-End. Validates that the 'prep for the day' job is used and valued." }] },
+    { name:'Payment collection rate', sub:'End-to-End',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:"End-to-End. Proves the 'get paid' workflow closes the loop and has real financial impact." }] },
+    { name:'Booking \u2192 completed visit conversion', sub:'End-to-End',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'End-to-End. Shows whether scheduling flow supports the full clinical workflow.' }] },
+    { name:'Job 3 velocity (actual vs estimated)', sub:'Architecture',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'Architecture. Calibrates ALL remaining estimates \u2014 the single most important planning signal.' }] },
+    { name:'Vendor integration effort', sub:'Architecture',
+      bars:[{ s:'2026-06-30', e:'2026-07-14', color:CAIT_C.newSt, conf:CAIT_CONF.notStarted, tip:'Architecture. Establishes the real cost of third-party integration, which scales across the product.' }] }
+  ]}
+];
+
+const caitMilestones = [
+  { date:'2026-05-15', name:'Re-Estimation Gate', sub:'May 15' },
+  { date:'2026-06-30', name:'Beta Launch', sub:'Jun 30' },
+];
+
+// ── TAB REGISTRY ─────────────────────────────────────
+const TABS = {
+  jay: {
+    groups: jayGroups, milestones: jayMilestones,
+    betaDate: '2026-07-15', betaMsIndex: 1,
+    msLineColors: { 0: '#FF8D6E' },
+    header: {
+      title: 'Beta <strong>Timeline Hypothesis</strong>',
+      sub: 'Living document \u00b7 Updated weekly as new information comes in \u00b7 ' + todayFull,
+      pills: ['Sprint 1 Start: March 3, 2026','Engineering: 3.5 FTE','Original 90-Day Target: June 1, 2026']
+    },
+    blocker: '<strong>Active Blocker \u2014 DevOps Provisioning:</strong> Service deployment collaboration is operating below required velocity. Back-and-forth is replacing true collaboration. Escalation in progress. Resolution required by approximately April 25 to maintain projected timeline. If unresolved, everything in Phase 3 and beyond slides.',
+    footnotes: [
+      { title:'Confidence Tier Definitions', para:null, items:[
+        '<strong>High:</strong> Spec complete, approach defined, no major unresolved dependencies',
+        '<strong>Medium:</strong> Scope understood; one or more open design or integration questions remain',
+        '<strong>Medium-Low:</strong> Core scope clear but significant technical unknowns exist \u2014 estimate most likely to shift after Vertical Slice #1',
+        '<strong>Blocker:</strong> External dependency actively gating downstream build work'] },
+      { title:'Key Assumptions Driving This Estimate', para:null, items:[
+        '3.5 engineering FTE sustained \u00b7 ~50% task parallelization',
+        'DevOps resolution by late April \u2014 every downstream track slides if delayed',
+        'Telehealth vendor (Zoom Meetings SDK) confirmed by week of April 6',
+        'Encounter entity definition locked before JTBD 3 build begins',
+        'Stripe confirmed for beta; Tebra Pay descoped',
+        'All estimates sharpen significantly after Vertical Slice #1 completes',
+        'Certain areas will require intentional rework to scale beyond MVP \u2014 this is a known and accepted trade-off, not a mistake'] },
+      { title:'Why the 90-Day Target Cannot Be Met at Current Scope', items:null,
+        para:'A full T-shirt sizing exercise across all in-scope JTBDs yields a low-end engineering estimate of 43 weeks at 5 FTE with 50% parallelization. At 3.5 FTE, this extends proportionally. Beta scope has been cut ruthlessly \u2014 everything removable without compromising signal has been removed. This is not a pace problem. It reflects honest scoping of an AI-native platform being built without industry precedent. The 90-day figure was an early hypothesis, not a scoped commitment.' },
+      { title:'What Beta Is Designed to Validate', para:null, items:[
+        'Is the dynamic canvas paradigm adopted by solo outpatient providers?',
+        'Does AI-assisted pre-session briefing materially reduce cognitive load?',
+        'Can the Substrate graph support end-to-end JTBD completion reliably?',
+        'Is cash-pay billing complete enough to close a real encounter?',
+        'Does AI coding acceleration hold under real build conditions at this complexity?'] }
+    ]
+  },
+  cait: {
+    groups: caitGroups, milestones: caitMilestones,
+    betaDate: '2026-06-30', betaMsIndex: 1,
+    msLineColors: { 0: '#6D28D9' },
+    header: {
+      title: "Cait's Beta Readiness \u2014 <strong>All 5 Jobs by June 30</strong>",
+      sub: 'Source: Nitro_Beta_Readiness.md \u00b7 March 26, 2026 \u00b7 4.5 engineers \u00b7 10 providers',
+      pills: ['Phase 1 Start: April 1, 2026','Engineering: 4.5 FTE','Beta Target: June 30, 2026']
+    },
+    blocker: null,
+    footnotes: [
+      { title:'Status Definitions', para:null, items:[
+        'In Progress: Spec or build actively underway',
+        'Not Started: Scoped but no active work',
+        'At Risk: Timeline uncertain, external dependency',
+        'Gate: Decision or validation point before proceeding',
+        'Blocked: Cannot proceed until resolved',
+        'Resolved: Decision made, no longer blocking'] },
+      { title:'Core Tension: Scalability vs Speed', para:null, items:[
+        'Without permission to build non-scalable + refactor commitment, June 30 is not achievable',
+        'Engineering will build for scale by default \u2014 explicit permission required',
+        'Beta = signal-gathering, not production-grade',
+        'Refactor phase between beta and MVP is the safety net'] },
+      { title:'Key Assumptions', para:null, items:[
+        '4.5 engineering FTE sustained',
+        'Phase 1 velocity calibrates all Phase 2 estimates',
+        'Re-estimation gate at end of Phase 1 determines if June 30 holds',
+        'Certain areas will require intentional rework to scale beyond MVP',
+        'Stripe confirmed for beta; Tebra Pay descoped',
+        'Product & Design Recommendation: resolve all 10 decisions by end of Phase 1'] },
+      { title:'What Beta Validates', para:null, items:[
+        'Is the dynamic canvas paradigm adopted by solo outpatient providers?',
+        'Does AI-assisted note generation save meaningful time?',
+        'Can the end-to-end encounter loop close reliably?',
+        'Is cash-pay billing complete enough for real revenue?',
+        'What is the true velocity of this engineering team at this complexity?'] }
+    ]
+  },
+  rich: (() => {
+    const RC = {
+      p0: { label: '6 MW \u00b7 2 WKS', bg: '#2D6A4F' },
+      p1: { label: '6 MW \u00b7 2 WKS', bg: '#3A7CA5' },
+      p2: { label: '8 MW \u00b7 2-3 WKS', bg: '#3A7CA5' },
+      p3: { label: '8 MW \u00b7 3 WKS', bg: '#3A7CA5' },
+      p4: { label: '8 MW \u00b7 2-3 WKS', bg: '#3A7CA5' },
+      p5: { label: '12 MW \u00b7 4-5 WKS', bg: '#A52D2D' },
+      p6: { label: '8 MW \u00b7 2 WKS', bg: '#3A7CA5' },
+      milestone: { label: 'MILESTONE', bg: '#6D28D9' },
+      dep: { label: 'DEPENDENCY', bg: '#CC6F4E' },
+      risk: { label: 'RISK', bg: '#B84A2E' },
+      team: { label: 'TEAM', bg: '#6B8F71' },
+      critical: { label: 'CRITICAL PATH', bg: '#A52D2D' },
+    };
+    return {
+      groups: [
+        // ── Lane 1: Phase Breakdown by Role ──
+        { label: 'Phase 0 \u2014 Foundations + Repo Setup (6 MW, 2 wks)', rows: [
+          { name: 'Backend (2.5w)', sub: 'Services + infra setup',
+            bars: [{ s:'2026-04-01', e:'2026-04-18', color:'#3D8F8A', conf: RC.p0,
+              tip:'Setup: note-service, note-orchestrator, intel-orchestrator, ui-orchestrator, notification-service \u00b7 Add: Kafka, Postgres (Flyway), Redis \u00b7 Define: vendor request/response schema, core domain models (note_session, review_task)' }] },
+          { name: 'AI Engineer (1.5w)', sub: 'Extraction framework',
+            bars: [{ s:'2026-04-01', e:'2026-04-18', color:'#3D8F8A', conf: RC.p0,
+              tip:'Setup intel-reasoning-service \u00b7 Focus: extraction framework (not note generation), validation utilities \u00b7 Define extraction schemas' }] },
+          { name: 'Frontend (1w)', sub: 'React + GraphQL setup',
+            bars: [{ s:'2026-04-01', e:'2026-04-18', color:'#3D8F8A', conf: RC.p0,
+              tip:'Setup React app \u00b7 Configure GraphQL + SSE \u00b7 Base frontend architecture \u00b7 Initial route structure placeholder' }] },
+          { name: 'Data Engineer (1w)', sub: 'Kafka + logging',
+            bars: [{ s:'2026-04-01', e:'2026-04-18', color:'#3D8F8A', conf: RC.p0,
+              tip:'Kafka topics \u00b7 Analytics schema \u00b7 Logging pipelines' }] },
+        ]},
+        { label: 'Phase 1 \u2014 Login + App Shell + Nav (6 MW, 2 wks)', rows: [
+          { name: 'Backend (2w)', sub: 'Auth integration',
+            bars: [{ s:'2026-04-18', e:'2026-05-02', color:'#3A7CA5', conf: RC.p1,
+              tip:'Auth: session/token validation, auth middleware/filters, user context propagation \u00b7 Add: user profile/identity endpoint, authorization checks, audit fields support' }] },
+          { name: 'Frontend (3w)', sub: 'Shell + navigation',
+            bars: [{ s:'2026-04-18', e:'2026-05-02', color:'#3A7CA5', conf: RC.p1,
+              tip:'Login flow, authenticated app shell, persistent header (title, user info, logout), navigation (Home, Appointments, Notes, Extraction), foundational styling (spacing, typography, cards, buttons, layout), route guards, loading/empty/unauthorized states' }] },
+          { name: 'AI Engineer (0w)', sub: 'No work this phase',
+            bars: [{ s:'2026-04-18', e:'2026-04-19', color:'#8CA7A2', conf: null,
+              tip:'No direct critical work in this phase' }] },
+          { name: 'Data Engineer (1w)', sub: 'Login analytics',
+            bars: [{ s:'2026-04-18', e:'2026-05-02', color:'#3A7CA5', conf: RC.p1,
+              tip:'Analytics for: login success/failure, navigation usage, page visits \u00b7 Define base user activity event schema' }] },
+        ]},
+        { label: 'Phase 2 \u2014 Session + Recording + Ingestion (8 MW, 2\u20133 wks)', rows: [
+          { name: 'Backend (3w)', sub: 'Session management',
+            bars: [{ s:'2026-05-02', e:'2026-05-23', color:'#3A7CA5', conf: RC.p2,
+              tip:'note-service: createNoteSession, session state management \u00b7 note-orchestrator: chunk ingestion, Firestore storage \u00b7 Vendor context packaging: prior notes, provider preferences \u00b7 Kafka events: session_started, chunk_received' }] },
+          { name: 'Frontend (2w)', sub: 'Recording UI',
+            bars: [{ s:'2026-05-02', e:'2026-05-23', color:'#3A7CA5', conf: RC.p2,
+              tip:'Appointment card \u2192 start session \u00b7 Recording UI + active indicator \u00b7 Clinical summary panel (read-only) \u00b7 Integrate into shared nav/header shell' }] },
+          { name: 'AI Engineer (1w)', sub: 'Transcript schema',
+            bars: [{ s:'2026-05-02', e:'2026-05-23', color:'#3A7CA5', conf: RC.p2,
+              tip:'Define transcript schema \u00b7 Prepare downstream extraction inputs' }] },
+          { name: 'Data Engineer (2w)', sub: 'Ingestion metrics',
+            bars: [{ s:'2026-05-02', e:'2026-05-23', color:'#3A7CA5', conf: RC.p2,
+              tip:'Ingestion metrics pipeline \u00b7 Session analytics' }] },
+        ]},
+        { label: 'Phase 3 \u2014 Vendor Integration + Review UI (8 MW, 3 wks)', rows: [
+          { name: 'Backend (4w)', sub: 'Vendor adapter layer',
+            bars: [{ s:'2026-05-23', e:'2026-06-13', color:'#3A7CA5', conf: RC.p3,
+              tip:'intel-orchestrator: trigger vendor call on session end \u00b7 Build vendor adapter layer: send transcript + context, receive note \u00b7 note-orchestrator: store vendor response \u00b7 Validation layer: ensure required sections (Subjective, Objective, Assessment, Plan) \u00b7 Emit: note.vendor_note_ready' }] },
+          { name: 'AI Engineer (2w)', sub: 'Validation layer',
+            bars: [{ s:'2026-05-23', e:'2026-06-13', color:'#3A7CA5', conf: RC.p3,
+              tip:'Build note validation layer: section completeness, structure normalization \u00b7 Build fallback/retry handling for bad vendor output' }] },
+          { name: 'Frontend (2w)', sub: 'Note editor',
+            bars: [{ s:'2026-05-23', e:'2026-06-13', color:'#3A7CA5', conf: RC.p3,
+              tip:'Build Psych Progress Note editor (structured sections) \u00b7 Add: provenance badges (AI-generated), editable UI \u00b7 Fit into established app shell' }] },
+        ]},
+        { label: 'Phase 4 \u2014 Approval + Persistence + Billing Gate (8 MW, 2\u20133 wks)', rows: [
+          { name: 'Backend (4w)', sub: 'Approval + persist',
+            bars: [{ s:'2026-06-13', e:'2026-07-04', color:'#3A7CA5', conf: RC.p4,
+              tip:'Implement approveNote mutation \u00b7 Persist: progress_note_version, note_section_review \u00b7 Lock note after approval \u00b7 Add billing eligibility flag' }] },
+          { name: 'Frontend (2w)', sub: 'Approval UX',
+            bars: [{ s:'2026-06-13', e:'2026-07-04', color:'#3A7CA5', conf: RC.p4,
+              tip:'Approval UX \u00b7 Section edit classification: verbatim, lightly edited, rewritten \u00b7 Feedback tagging UI' }] },
+          { name: 'AI Engineer (1w)', sub: 'Edit classification',
+            bars: [{ s:'2026-06-13', e:'2026-07-04', color:'#3A7CA5', conf: RC.p4,
+              tip:'Optional: edit classification heuristics' }] },
+          { name: 'Data Engineer (1w)', sub: 'Approval metrics',
+            bars: [{ s:'2026-06-13', e:'2026-07-04', color:'#3A7CA5', conf: RC.p4,
+              tip:'Track: approval time, edit metrics' }] },
+        ]},
+        { label: 'Phase 5 \u2014 Extraction + Reconciliation (12 MW, 4\u20135 wks) \u2605 CRITICAL PATH', rows: [
+          { name: 'Backend (4w)', sub: 'Extraction infra',
+            bars: [{ s:'2026-07-04', e:'2026-08-08', color:'#3A7CA5', conf: RC.p5,
+              tip:'Trigger extraction after approval \u00b7 Build extraction_review_task \u00b7 Integrate longitudinal record APIs \u00b7 Persist reconciled data' }] },
+          { name: 'AI Engineer (6w) \u2014 CRITICAL PATH', sub: 'Extraction pipeline \u00b7 Single point of failure',
+            bars: [{ s:'2026-07-04', e:'2026-08-08', color:'#D94040', conf: RC.critical,
+              tip:'CRITICAL PATH BOTTLENECK \u00b7 Build extraction pipeline: diagnoses + ICD mapping, medications, treatment plan \u00b7 Build: conflict detection, duplicate detection \u00b7 Build comparison logic: new vs existing data \u00b7 6 weeks solo \u2014 single point of failure' }] },
+          { name: 'Frontend (2w)', sub: 'Reconciliation panel',
+            bars: [{ s:'2026-07-04', e:'2026-08-08', color:'#3A7CA5', conf: RC.p5,
+              tip:'Build reconciliation panel: new items, conflicts, duplicates \u00b7 Inline edit + confirm UX' }] },
+        ]},
+        { label: 'Phase 6 \u2014 Instrumentation + Hardening (8 MW, 2 wks)', rows: [
+          { name: 'Backend (3w)', sub: 'Analytics + retry',
+            bars: [{ s:'2026-08-08', e:'2026-08-22', color:'#3A7CA5', conf: RC.p6,
+              tip:'Emit analytics events: note generation latency, approval duration, extraction outcomes \u00b7 Add retry logic for vendor failures \u00b7 Improve idempotency' }] },
+          { name: 'AI Engineer (2w)', sub: 'Accuracy + scoring',
+            bars: [{ s:'2026-08-08', e:'2026-08-22', color:'#3A7CA5', conf: RC.p6,
+              tip:'Improve extraction accuracy \u00b7 Add confidence scoring' }] },
+          { name: 'Frontend (1w)', sub: 'Polish',
+            bars: [{ s:'2026-08-08', e:'2026-08-22', color:'#3A7CA5', conf: RC.p6,
+              tip:'UX polish \u00b7 Error states \u00b7 Final consistency pass across header, nav, page layouts, responsiveness \u00b7 Rich\'s recommendation: "Adding login, header, navigation, and basic styling as an explicit early phase is the right move. It creates a stable foundation and prevents later UI rework. With current team, this changes delivery from ~15\u201318 weeks to 17\u201320 weeks."' }] },
+          { name: 'Data Engineer (2w)', sub: 'Dashboards',
+            bars: [{ s:'2026-08-08', e:'2026-08-22', color:'#3A7CA5', conf: RC.p6,
+              tip:'Build dashboards: note acceptance rate, conflict resolution rate \u00b7 Monitor: vendor latency, system performance' }] },
+        ]},
+        // ── Lane 2: Milestones ──
+        { label: 'Milestones (7)', rows: [
+          { name: 'M0: App Shell Working', sub: 'After Phase 1',
+            bars: [{ s:'2026-05-02', e:'2026-05-04', color:'#6D28D9', conf: RC.milestone,
+              tip:'Authenticated app shell, header, and navigation working' }] },
+          { name: 'M1: Recording Working', sub: 'After Phase 2',
+            bars: [{ s:'2026-05-23', e:'2026-05-25', color:'#6D28D9', conf: RC.milestone,
+              tip:'Recording + ingestion working' }] },
+          { name: 'M2: Vendor Note Displayed', sub: 'After Phase 3',
+            bars: [{ s:'2026-06-13', e:'2026-06-15', color:'#6D28D9', conf: RC.milestone,
+              tip:'Vendor-generated psych progress note displayed' }] },
+          { name: 'M3: Approval Working', sub: 'After Phase 4',
+            bars: [{ s:'2026-07-04', e:'2026-07-06', color:'#6D28D9', conf: RC.milestone,
+              tip:'Note review + approval working' }] },
+          { name: 'M4: Extraction Working', sub: 'After Phase 5',
+            bars: [{ s:'2026-08-08', e:'2026-08-10', color:'#6D28D9', conf: RC.milestone,
+              tip:'Extraction + reconciliation working' }] },
+          { name: 'M5: End-to-End Complete', sub: 'Target delivery',
+            bars: [{ s:'2026-08-20', e:'2026-08-22', color:'#D94040', conf: RC.milestone,
+              tip:'End-to-end workflow complete \u00b7 All 7 phases delivered' }] },
+          { name: 'M6: Production Ready', sub: 'Analytics + hardening',
+            bars: [{ s:'2026-08-22', e:'2026-08-24', color:'#6D28D9', conf: RC.milestone,
+              tip:'Production-ready with analytics' }] },
+        ]},
+        // ── Lane 3: Dependencies + Team ──
+        { label: 'Dependencies (4) + Team (6)', rows: [
+          { name: 'Auth provider integration', sub: 'Dependency \u00b7 Phase 0\u20131',
+            bars: [{ s:'2026-04-01', e:'2026-05-02', color:'#FF8D6E', conf: RC.dep,
+              tip:'Authentication / identity provider integration for the new experience' }] },
+          { name: 'Vendor API availability + SLAs', sub: 'Dependency \u00b7 Phase 3',
+            bars: [{ s:'2026-05-23', e:'2026-06-13', color:'#FF8D6E', conf: RC.dep,
+              tip:'Vendor API availability + SLAs' }] },
+          { name: 'Longitudinal record APIs', sub: 'Dependency \u00b7 Phase 5',
+            bars: [{ s:'2026-07-04', e:'2026-08-08', color:'#FF8D6E', conf: RC.dep,
+              tip:'Patient longitudinal record integration' }] },
+          { name: 'Design direction', sub: 'Dependency \u00b7 Phase 1',
+            bars: [{ s:'2026-04-18', e:'2026-05-02', color:'#FF8D6E', conf: RC.dep,
+              tip:'Shared design direction for header, layout, and basic visual styling' }] },
+          { name: '2\u00d7 Backend Engineer', sub: 'All phases',
+            bars: [{ s:'2026-04-01', e:'2026-08-22', color:'#8CA7A2', conf: RC.team,
+              tip:'2 backend engineers across all phases' }] },
+          { name: '1\u00d7 Frontend Engineer', sub: 'All phases',
+            bars: [{ s:'2026-04-01', e:'2026-08-22', color:'#8CA7A2', conf: RC.team,
+              tip:'1 frontend engineer across all phases' }] },
+          { name: '1\u00d7 AI Engineer \u2605', sub: 'All phases \u00b7 Carries Phase 5 solo',
+            bars: [{ s:'2026-04-01', e:'2026-08-22', color:'#D94040', conf: RC.critical,
+              tip:'1 AI engineer \u2014 extraction + validation focus \u00b7 CRITICAL: carries Phase 5 solo (6 weeks) \u2014 single point of failure' }] },
+          { name: '1\u00d7 Data Engineer', sub: 'All phases',
+            bars: [{ s:'2026-04-01', e:'2026-08-22', color:'#8CA7A2', conf: RC.team,
+              tip:'1 data engineer across all phases' }] },
+          { name: '1\u00d7 Tech Lead', sub: 'All phases',
+            bars: [{ s:'2026-04-01', e:'2026-08-22', color:'#8CA7A2', conf: RC.team,
+              tip:'1 tech lead across all phases' }] },
+        ]},
+        // ── Lane 4: Risks ──
+        { label: 'Risks & Mitigations (5)', rows: [
+          { name: '\u26a0 Auth blocks frontend', sub: 'Phase 0\u20131',
+            bars: [{ s:'2026-04-01', e:'2026-05-02', color:'#D95F3F', conf: RC.risk,
+              tip:'Auth integration slows frontend start \u00b7 Mitigation: Build app shell and navigation with mocked auth first. Swap in real auth provider once backend contract is ready.' }] },
+          { name: '\u26a0 UI fragmentation', sub: 'Phase 1\u20133',
+            bars: [{ s:'2026-04-18', e:'2026-06-13', color:'#D95F3F', conf: RC.risk,
+              tip:'UI becomes fragmented across phases \u00b7 Mitigation: Establish app shell, header, navigation, and design primitives in Phase 1. Reuse shared components across all later phases.' }] },
+          { name: '\u26a0 Vendor output quality', sub: 'Phase 3\u20135',
+            bars: [{ s:'2026-05-23', e:'2026-08-08', color:'#D95F3F', conf: RC.risk,
+              tip:'Vendor output inconsistent \u00b7 Mitigation: Validation layer + retry/fallback handling' }] },
+          { name: '\u26a0 Extraction errors', sub: 'Phase 5',
+            bars: [{ s:'2026-07-04', e:'2026-08-08', color:'#D95F3F', conf: RC.risk,
+              tip:'Extraction errors \u00b7 Mitigation: Human reconciliation UI' }] },
+          { name: '\u26a0 Vendor latency', sub: 'Phase 3\u20136',
+            bars: [{ s:'2026-05-23', e:'2026-08-22', color:'#D95F3F', conf: RC.risk,
+              tip:'Vendor latency \u00b7 Mitigation: Async workflow + SSE updates' }] },
+        ]},
+      ],
+      milestones: [
+        { date: '2026-05-02', name: 'M0 App Shell', sub: 'May 2' },
+        { date: '2026-05-23', name: 'M1 Recording', sub: 'May 23' },
+        { date: '2026-06-13', name: 'M2 Vendor Note', sub: 'Jun 13' },
+        { date: '2026-07-04', name: 'M3 Approval', sub: 'Jul 4' },
+        { date: '2026-08-08', name: 'M4 Extraction', sub: 'Aug 8' },
+        { date: '2026-08-22', name: 'M5 End-to-End', sub: 'Aug 22' },
+        { date: '2026-08-24', name: 'M6 Production', sub: 'Aug 24' },
+      ],
+      betaDate: '2026-08-22',
+      betaMsIndex: 5,
+      msLineColors: { 0: '#6D28D9', 1: '#6D28D9', 2: '#6D28D9', 3: '#6D28D9', 4: '#6D28D9', 5: '#D94040', 6: '#6D28D9' },
+      header: {
+        title: 'Rich\'s Milestone 1 \u2014 <strong>Deliver Care (17\u201320 weeks)</strong>',
+        sub: 'Source: Nitro_Milestone1_Deliver_Care.md \u00b7 56 man-weeks \u00b7 6-person team \u00b7 Job 3 only',
+        pills: ['\u25c6 M5 END-TO-END \u00b7 ~17\u201320 wks', '56 Man-Weeks', 'Job 3 Only']
+      },
+      blocker: null,
+      footnotes: [
+        { title: 'Man-Week Summary by Phase', para: null, items: [
+          'Phase 0 \u2014 Foundations: 6 MW (Backend 2.5, AI 1.5, Frontend 1, Data 1)',
+          'Phase 1 \u2014 App Shell: 6 MW (Backend 2, Frontend 3, Data 1)',
+          'Phase 2 \u2014 Session: 8 MW (Backend 3, Frontend 2, AI 1, Data 2)',
+          'Phase 3 \u2014 Vendor: 8 MW (Backend 4, AI 2, Frontend 2)',
+          'Phase 4 \u2014 Approval: 8 MW (Backend 4, Frontend 2, AI 1, Data 1)',
+          'Phase 5 \u2014 Extraction: 12 MW (Backend 4, AI 6\u2605, Frontend 2) \u2014 CRITICAL PATH',
+          'Phase 6 \u2014 Hardening: 8 MW (Backend 3, AI 2, Frontend 1, Data 2)',
+          'TOTAL: 56 man-weeks \u00b7 17\u201320 calendar weeks'
+        ]},
+        { title: 'What We Own vs Vendor Owns', para: null, items: [
+          'Vendor Owns: Psych progress note generation, prompt logic, LLM inference',
+          'Our System Owns: Context packaging, vendor orchestration, validation, review + approval, extraction + reconciliation, deterministic persistence, instrumentation + analytics',
+          'Key principle: The system does not generate clinical notes. It orchestrates vendor-generated notes and ensures correctness through validation, human review, and structured extraction.'
+        ]},
+        { title: 'Critical Path Analysis', para: null, items: [
+          'Phase 5 AI Pipeline (6 weeks) is the single longest task and a single-engineer dependency',
+          'If AI engineer is unavailable, Phase 5 cannot proceed \u2014 no parallelization possible',
+          'All downstream milestones (M4, M5, M6) are gated on Phase 5 completion',
+          'Mitigation: Human reconciliation UI provides fallback for extraction quality issues'
+        ]},
+        { title: 'Scope Boundary', para: null, items: [
+          'This is Job 3 ONLY \u2014 Deliver & Document Care',
+          'NOT included: scheduling (Job 1), day prep (Job 2), billing (Job 4), cross-cutting infrastructure',
+          'The 17\u201320 week estimate covers: record \u2192 prep \u2192 deliver care \u2192 get paid for a single job',
+          'Adding login, header, navigation, and basic styling as Phase 1 changed delivery from ~15\u201318 to 17\u201320 weeks \u2014 a deliberate trade-off for UI stability'
+        ]}
+      ]
+    };
+  })()
+};
+
+// ══════════════════════════════════════════════════════
+// ── RENDER ENGINE ────────────────────────────────────
+// ══════════════════════════════════════════════════════
+let currentGroups = null;
+let currentMilestones = null;
+let currentBetaMsIndex = 0;
+let BETA = new Date('2026-07-15');
+
+const body = document.getElementById('chart-body');
+const shell = document.getElementById('chart-shell');
+let overlay = null;
+let betaLine = null;
+let deltaEl = null;
+let deltaLabel = null;
+
+const TBD_COLOR = '#FF8D6E';
+
+function updateDelta() {
+  if (!deltaEl || !deltaLabel || !betaLine) return;
+  const d90pct  = ((D90 - START)/864e5/TOTAL*100);
+  const betapct = ((BETA - START)/864e5/TOTAL*100);
+  const midpct  = (d90pct + betapct) / 2;
+  const weeks   = Math.round((BETA - D90)/864e5/7);
+  deltaEl.style.cssText = `position:absolute;left:${d90pct.toFixed(3)}%;width:${(betapct-d90pct).toFixed(3)}%;top:0;bottom:0;background:rgba(26,111,168,.06);`;
+  deltaLabel.style.cssText = `position:absolute;left:${midpct.toFixed(3)}%;top:10px;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:#FF8D6E;white-space:nowrap;letter-spacing:.05em;font-family:'IBM Plex Sans',sans-serif;`;
+  deltaLabel.textContent = '\u2190 ~' + weeks + ' wk delta \u2192';
+  betaLine.style.left = betapct.toFixed(3) + '%';
+  document.getElementById('legend-beta').textContent = 'Beta Target (' + BETA.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ')';
+}
+
+function makeEditable(el) {
+  el.style.cursor = 'text';
+  el.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    const original = el.textContent;
+    const inp = document.createElement('input');
+    inp.className = 'ii';
+    inp.style.letterSpacing = getComputedStyle(el).letterSpacing;
+    inp.style.textTransform = getComputedStyle(el).textTransform;
+    inp.value = original;
+    el.textContent = '';
+    el.appendChild(inp);
+    inp.focus(); inp.select();
+    const done = () => { el.textContent = inp.value.trim() || original; if (typeof schedSave==='function') schedSave(); };
+    inp.addEventListener('blur', done);
+    inp.addEventListener('keydown', (ev) => {
+      if (ev.key==='Enter') { ev.preventDefault(); inp.blur(); }
+      if (ev.key==='Escape') { el.textContent = original; }
+    });
+  });
+}
+
+function attachBarHandlers(barEl, gi, ri, bi) {
+  const getBar = () => currentGroups[gi].rows[ri].bars[bi];
+
+  barEl.querySelector('.brh').addEventListener('mousedown', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const trackEl = barEl.parentElement;
+    const tw = trackEl.getBoundingClientRect().width;
+    const startX = e.clientX;
+    const startW = parseFloat(barEl.style.width);
+    barEl.classList.add('dragging');
+    function onMove(ev) { barEl.style.width = Math.max(0.5, startW + (ev.clientX-startX)/tw*100).toFixed(3)+'%'; }
+    function onUp() {
+      barEl.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      const lPct = parseFloat(barEl.style.left), wPct = parseFloat(barEl.style.width);
+      const bar = getBar();
+      bar.s = fmtDate(dateFromPct(lPct)); bar.e = fmtDate(dateFromPct(lPct+wPct));
+      if (typeof schedSave==='function') schedSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  barEl.addEventListener('mousedown', (e) => {
+    if (e.button!==0) return;
+    const rect = barEl.getBoundingClientRect();
+    if (e.clientX > rect.right-10) return;
+    const trackEl = barEl.parentElement;
+    const tw = trackEl.getBoundingClientRect().width;
+    const startX = e.clientX, startL = parseFloat(barEl.style.left), startW = parseFloat(barEl.style.width);
+    let active = false;
+    function onMove(ev) {
+      if (!active && Math.abs(ev.clientX-startX)<4) return;
+      if (!active) { active=true; barEl.classList.add('dragging'); }
+      barEl.style.left = Math.max(0, startL+(ev.clientX-startX)/tw*100).toFixed(3)+'%';
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (active) {
+        barEl.classList.remove('dragging');
+        const lPct = parseFloat(barEl.style.left);
+        const bar = getBar();
+        bar.s = fmtDate(dateFromPct(lPct)); bar.e = fmtDate(dateFromPct(lPct+startW));
+        if (typeof schedSave==='function') schedSave();
+      }
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  barEl.addEventListener('dblclick', (e) => {
+    e.stopPropagation(); e.preventDefault();
+    const txtEl = barEl.querySelector('.bar-txt');
+    const original = txtEl.textContent;
+    const inp = document.createElement('input');
+    inp.style.cssText = 'background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);border-radius:3px;color:inherit;font-family:inherit;font-size:11px;font-weight:600;padding:1px 4px;outline:none;width:calc(100% - 14px);';
+    inp.value = original;
+    txtEl.textContent = '';
+    txtEl.appendChild(inp);
+    inp.focus(); inp.select();
+    const done = () => { txtEl.textContent = inp.value.trim() || original; if (typeof schedSave==='function') schedSave(); };
+    inp.addEventListener('blur', done);
+    inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape'){txtEl.textContent=original;} });
+    inp.addEventListener('mousedown', (ev) => ev.stopPropagation());
+  });
+}
+
+function attachMilestoneHandlers(msEl, i) {
+  const diamond = msEl.querySelector('.ms-diamond');
+  const nameEl = msEl.querySelector('.ms-name');
+  const dateEl = msEl.querySelector('.ms-date');
+
+  diamond.addEventListener('mousedown', (e) => {
+    if (e.button!==0) return;
+    e.preventDefault(); e.stopPropagation();
+    const trackEl = msEl.parentElement;
+    const tw = trackEl.getBoundingClientRect().width;
+    const startX = e.clientX, startL = parseFloat(msEl.style.left);
+    diamond.style.cursor = 'grabbing';
+    function onMove(ev) {
+      const newPct = Math.max(0, Math.min(100, startL+(ev.clientX-startX)/tw*100));
+      msEl.style.left = newPct.toFixed(3)+'%';
+      const vl = document.getElementById('ms-vline-'+i);
+      if (vl) vl.style.left = newPct.toFixed(3)+'%';
+      const nd = dateFromPct(newPct);
+      dateEl.textContent = fmtShort(nd);
+      currentMilestones[i].date = fmtDate(nd);
+      currentMilestones[i].sub = fmtShort(nd);
+      if (i===currentBetaMsIndex) { BETA=nd; updateDelta(); }
+    }
+    function onUp() {
+      diamond.style.cursor = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      if (typeof schedSave==='function') schedSave();
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  nameEl.style.cursor = 'text';
+  nameEl.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    const original = nameEl.textContent;
+    const inp = document.createElement('input');
+    inp.className = 'ii';
+    inp.style.cssText += 'text-align:center;min-width:80px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;';
+    inp.value = original;
+    nameEl.textContent = '';
+    nameEl.appendChild(inp);
+    inp.focus(); inp.select();
+    const done = () => { const v=inp.value.trim()||original; nameEl.textContent=v; currentMilestones[i].name=v; if (typeof schedSave==='function') schedSave(); };
+    inp.addEventListener('blur', done);
+    inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape'){nameEl.textContent=original;} });
+    inp.addEventListener('mousedown', (ev) => ev.stopPropagation());
+  });
+}
+
+function renderChart(tabKey) {
+  const tab = TABS[tabKey];
+  currentGroups = tab.groups;
+  currentMilestones = tab.milestones;
+  currentBetaMsIndex = tab.betaMsIndex;
+  BETA = new Date(tab.betaDate);
+
+  body.innerHTML = '';
+  if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+
+  currentGroups.forEach((g, gi) => {
+    const gh = document.createElement('div');
+    gh.className = 'grp-hdr';
+    gh.innerHTML = `<div class="grp-stub"><span class="grp-label">${g.label}</span></div><div class="grp-track"></div>`;
+    body.appendChild(gh);
+
+    g.rows.forEach((row, ri) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'c-row';
+      let barsHTML = '';
+      row.bars.forEach((bar, bi) => {
+        const left = p(dt(bar.s)), width = pw(dt(bar.s), dt(bar.e));
+        const badge = bar.conf ? `<span class="conf-badge" style="background:${bar.conf.bg};">${bar.conf.label}</span>` : '';
+        const isTbd = (bar.color === TBD_COLOR);
+        const barStyle = isTbd
+          ? `left:${left};width:${width};background:var(--bg-alt);border:1.5px dashed ${TBD_COLOR};`
+          : `left:${left};width:${width};background:${bar.color};`;
+        const txtStyle = isTbd ? ' style="color:#8B6914;"' : '';
+        const displayTxt = bar.tip.split('\u00b7')[0].split('.')[0].trim();
+        barsHTML += `<div class="bar" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">
+          <span class="bar-txt"${txtStyle}>${displayTxt}</span>${badge}<div class="bar-tip">${bar.tip}</div><div class="brh"></div></div>`;
+      });
+      rowEl.innerHTML = `<div class="row-stub"><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div></div><div class="row-track">${barsHTML}</div>`;
+      body.appendChild(rowEl);
+    });
+  });
+
+  // Milestone row
+  const msRow = document.createElement('div');
+  msRow.className = 'ms-row';
+  msRow.innerHTML = `<div class="ms-stub"><div><div class="row-name" style="font-size:12px;">Milestones</div></div></div><div class="ms-track" id="ms-track"></div>`;
+  body.appendChild(msRow);
+
+  const msTrack = document.getElementById('ms-track');
+  currentMilestones.forEach((m, i) => {
+    const el = document.createElement('div');
+    el.className = 'milestone'; el.id = 'ms-'+i;
+    el.style.left = p(dt(m.date));
+    el.innerHTML = `<div class="ms-diamond"></div><div class="ms-name">${m.name}</div><div class="ms-date">${m.sub}</div>`;
+    msTrack.appendChild(el);
+  });
+
+  // Overlay
+  overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;left:calc(var(--lw) + 1px);right:0;top:0;bottom:0;pointer-events:none;z-index:5;overflow:hidden;';
+
+  // Weekly grid lines (rendered in overlay so they scale with zoom)
+  const weekMs = 7 * 864e5;
+  let gridDate = new Date(START);
+  while (gridDate < END) {
+    const pct = ((gridDate - START) / 864e5 / TOTAL * 100);
+    if (pct > 0 && pct < 100) {
+      const gl = document.createElement('div');
+      gl.style.cssText = `position:absolute;left:${pct.toFixed(3)}%;top:0;bottom:0;width:1px;background:var(--brd);opacity:.5;`;
+      overlay.appendChild(gl);
+    }
+    gridDate = new Date(gridDate.getTime() + weekMs);
+  }
+
+  const tl = document.createElement('div');
+  tl.style.cssText = `position:absolute;left:${p(TODAY)};top:0;bottom:0;width:2px;background:var(--today-c);opacity:.45;`;
+  overlay.appendChild(tl);
+
+  const dl = document.createElement('div');
+  dl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;width:2px;opacity:.85;background:repeating-linear-gradient(to bottom,var(--d90-c) 0,var(--d90-c) 6px,transparent 6px,transparent 12px);`;
+  overlay.appendChild(dl);
+
+  betaLine = document.createElement('div');
+  betaLine.id = 'beta-line';
+  betaLine.style.cssText = `position:absolute;left:${p(BETA)};top:0;bottom:0;width:2px;opacity:.8;background:repeating-linear-gradient(to bottom,#FF8D6E 0,#FF8D6E 6px,transparent 6px,transparent 12px);`;
+  overlay.appendChild(betaLine);
+
+  deltaEl = document.createElement('div'); deltaEl.id = 'delta-region'; overlay.appendChild(deltaEl);
+  deltaLabel = document.createElement('div'); deltaLabel.id = 'delta-label'; overlay.appendChild(deltaLabel);
+  updateDelta();
+
+  // Milestone dotted lines with tab-specific colors
+  currentMilestones.forEach((m, i) => {
+    const vl = document.createElement('div');
+    vl.className = 'vl-ms'; vl.id = 'ms-vline-'+i;
+    vl.style.left = p(dt(m.date));
+    if (tab.msLineColors && tab.msLineColors[i]) {
+      vl.style.borderLeftColor = tab.msLineColors[i];
+      vl.style.borderLeftWidth = '2.5px';
+    }
+    overlay.appendChild(vl);
+  });
+
+  shell.appendChild(overlay);
+
+  // Attach interaction handlers
+  document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(makeEditable);
+  document.querySelectorAll('.bar').forEach(barEl => {
+    attachBarHandlers(barEl, +barEl.dataset.gi, +barEl.dataset.ri, +barEl.dataset.bi);
+  });
+  document.querySelectorAll('.milestone').forEach((msEl, i) => attachMilestoneHandlers(msEl, i));
+  document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(el => {
+    el.addEventListener('focusout', () => setTimeout(schedSave, 50));
+  });
+}
+
+function renderHeader(tabKey) {
+  const tab = TABS[tabKey];
+  document.getElementById('hd-title').innerHTML = tab.header.title;
+  document.getElementById('hd-sub').textContent = tab.header.sub;
+  document.getElementById('hd-pills').innerHTML = tab.header.pills.map(t => `<div class="pill">${t}</div>`).join('');
+  const bannerEl = document.getElementById('blocker-banner');
+  if (tab.blocker) {
+    bannerEl.style.display = 'flex';
+    document.getElementById('blocker-text').innerHTML = tab.blocker;
+  } else {
+    bannerEl.style.display = 'none';
+  }
+}
+
+function renderFootnotes(tabKey) {
+  const tab = TABS[tabKey];
+  const container = document.getElementById('footnotes');
+  container.innerHTML = '';
+  tab.footnotes.forEach((fn, i) => {
+    const card = document.createElement('div');
+    card.className = 'fn-card'; card.id = 'fn-'+i;
+    let content = `<h4>${fn.title}</h4>`;
+    if (fn.items) content += '<ul>' + fn.items.map(item => `<li>${item}</li>`).join('') + '</ul>';
+    if (fn.para) content += `<p>${fn.para}</p>`;
+    content += `<button class="add-bullet" onclick="addBullet('fn-${i}')">+ Add item</button>`;
+    card.innerHTML = content;
+    container.appendChild(card);
+  });
+
+  // Attach footnote editing handlers
+  document.querySelectorAll('.fn-card li, .fn-card p').forEach(el => {
+    el.style.cursor = 'text';
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (el.querySelector('input, textarea')) return;
+      const original = el.innerHTML;
+      if (el.tagName === 'P') {
+        const ta = document.createElement('textarea');
+        ta.style.cssText = 'width:100%;min-height:60px;font-family:inherit;font-size:12px;color:var(--txt-m);line-height:1.65;border:1.5px solid var(--g-mid);border-radius:4px;padding:6px 8px;outline:none;resize:vertical;background:white;';
+        ta.value = el.textContent; el.textContent = ''; el.appendChild(ta); ta.focus();
+        const done = () => { el.textContent = ta.value.trim() || el.textContent; schedSave(); };
+        ta.addEventListener('blur', done);
+        ta.addEventListener('keydown', (ev) => { if (ev.key==='Escape') el.innerHTML = original; });
+      } else {
+        const inp = document.createElement('input');
+        inp.className = 'ii'; inp.style.fontSize = '12px'; inp.value = el.textContent;
+        el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
+        const done = () => { el.textContent = inp.value.trim() || el.textContent; schedSave(); };
+        inp.addEventListener('blur', done);
+        inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape') el.innerHTML=original; });
+      }
+    });
+  });
+}
+
+function addBullet(cardId) {
+  const card = document.getElementById(cardId);
+  let ul = card.querySelector('ul');
+  if (!ul) { ul = document.createElement('ul'); ul.style.paddingLeft='14px'; card.querySelector('h4').after(ul); }
+  const li = document.createElement('li'); li.textContent = 'New item'; ul.appendChild(li);
+  const inp = document.createElement('input'); inp.className='ii'; inp.style.fontSize='12px'; inp.value='';
+  li.textContent = ''; li.appendChild(inp); inp.focus();
+  const done = () => {
+    const v = inp.value.trim();
+    if (!v) { li.remove(); } else { li.textContent = v; }
+    li.addEventListener('dblclick', (e) => {
+      e.stopPropagation(); if (li.querySelector('input')) return;
+      const orig = li.textContent;
+      const inp2 = document.createElement('input'); inp2.className='ii'; inp2.style.fontSize='12px'; inp2.value=orig;
+      li.textContent=''; li.appendChild(inp2); inp2.focus(); inp2.select();
+      const done2 = () => { li.textContent=inp2.value.trim()||orig; schedSave(); };
+      inp2.addEventListener('blur', done2);
+      inp2.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp2.blur();} if (ev.key==='Escape') li.textContent=orig; });
+    });
+    li.style.cursor = 'text';
+    schedSave();
+  };
+  inp.addEventListener('blur', done);
+  inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape') li.remove(); });
+}
+
+// ══════════════════════════════════════════════════════
+// ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
+// ══════════════════════════════════════════════════════
+const validTabs = ['jay','cait','rich'];
+let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'jay';
+function apiUrl() { return '/api/state?tab=' + activeTab; }
+const saveInd = document.getElementById('save-ind');
+let _saveTimer = null;
+let _pollTimer = null;
+let _lastSavedHash = '';
+
+function getState() {
+  const barState = [];
+  document.querySelectorAll('.bar').forEach(b => {
+    barState.push({ gi:+b.dataset.gi, ri:+b.dataset.ri, bi:+b.dataset.bi,
+      left:b.style.left, width:b.style.width, txt:b.querySelector('.bar-txt')?.textContent||'' });
+  });
+  const trackState = [];
+  document.querySelectorAll('.c-row .row-stub').forEach(stub => {
+    const name=stub.querySelector('.row-name'), sub=stub.querySelector('.row-sub');
+    trackState.push({ name:name?name.textContent:'', sub:sub?sub.textContent:'' });
+  });
+  const grpState = [];
+  document.querySelectorAll('.grp-label').forEach(g => grpState.push(g.textContent));
+  const msState = currentMilestones.map((m,i) => ({
+    date:m.date, name:m.name, sub:m.sub, left:document.getElementById('ms-'+i)?.style.left||''
+  }));
+  const fnState = [];
+  document.querySelectorAll('.fn-card').forEach(card => {
+    const title=card.querySelector('h4')?.textContent||'';
+    const items=[]; card.querySelectorAll('li').forEach(li => items.push(li.textContent));
+    const para=card.querySelector('p');
+    fnState.push({ title, items, para:para?para.textContent:null });
+  });
+  return { barState, trackState, grpState, msState, fnState, saved:new Date().toISOString() };
+}
+
+function hashState(state) {
+  return JSON.stringify(state.barState)+JSON.stringify(state.trackState)+JSON.stringify(state.grpState)+JSON.stringify(state.msState)+JSON.stringify(state.fnState);
+}
+
+function applyState(state) {
+  if (!state) return;
+  if (state.barState) {
+    state.barState.forEach(bs => {
+      const bar = document.querySelector(`.bar[data-gi="${bs.gi}"][data-ri="${bs.ri}"][data-bi="${bs.bi}"]`);
+      if (bar) { bar.style.left=bs.left; bar.style.width=bs.width;
+        const txt=bar.querySelector('.bar-txt'); if (txt&&bs.txt) txt.textContent=bs.txt; }
+    });
+  }
+  if (state.trackState) {
+    const stubs = document.querySelectorAll('.c-row .row-stub');
+    state.trackState.forEach((ts,i) => {
+      if (stubs[i]) { const name=stubs[i].querySelector('.row-name'), sub=stubs[i].querySelector('.row-sub');
+        if (name&&ts.name) name.textContent=ts.name; if (sub&&ts.sub) sub.textContent=ts.sub; }
+    });
+  }
+  if (state.grpState) {
+    const grps = document.querySelectorAll('.grp-label');
+    state.grpState.forEach((g,i) => { if (grps[i]&&g) grps[i].textContent=g; });
+  }
+  if (state.msState) {
+    state.msState.forEach((ms,i) => {
+      if (!currentMilestones[i]) return;
+      currentMilestones[i].date=ms.date; currentMilestones[i].name=ms.name; currentMilestones[i].sub=ms.sub;
+      const msEl = document.getElementById('ms-'+i);
+      if (msEl&&ms.left) { msEl.style.left=ms.left;
+        const nameEl=msEl.querySelector('.ms-name'), dateEl=msEl.querySelector('.ms-date');
+        if (nameEl) nameEl.textContent=ms.name; if (dateEl) dateEl.textContent=ms.sub; }
+      const vl = document.getElementById('ms-vline-'+i);
+      if (vl&&ms.left) vl.style.left=ms.left;
+      if (i===currentBetaMsIndex) { BETA=new Date(ms.date); updateDelta(); }
+    });
+  }
+  if (state.fnState) {
+    const cards = document.querySelectorAll('.fn-card');
+    state.fnState.forEach((fn,i) => {
+      if (!cards[i]) return;
+      const ul=cards[i].querySelector('ul'), para=cards[i].querySelector('p');
+      if (fn.items&&fn.items.length>0&&ul) {
+        ul.innerHTML='';
+        fn.items.forEach(txt => {
+          const li=document.createElement('li'); li.textContent=txt; li.style.cursor='text';
+          li.addEventListener('dblclick', (e) => {
+            e.stopPropagation(); if (li.querySelector('input')) return;
+            const orig=li.textContent;
+            const inp=document.createElement('input'); inp.className='ii'; inp.style.fontSize='12px'; inp.value=orig;
+            li.textContent=''; li.appendChild(inp); inp.focus(); inp.select();
+            const done=()=>{li.textContent=inp.value.trim()||orig;schedSave();};
+            inp.addEventListener('blur',done);
+            inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();inp.blur();}if(ev.key==='Escape')li.textContent=orig;});
+          });
+          ul.appendChild(li);
+        });
+      }
+      if (fn.para!==null&&para) para.textContent=fn.para;
+    });
+  }
+  _lastSavedHash = hashState(state);
+}
+
+function schedSave() {
+  clearTimeout(_saveTimer);
+  saveInd.textContent = '\u25cf Saving\u2026';
+  saveInd.className = 'save-ind saving';
+  _saveTimer = setTimeout(doSave, 400);
+}
+
+function doSave() {
+  const state = getState();
+  const h = hashState(state);
+  if (h===_lastSavedHash) { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind saved'; return; }
+  fetch(apiUrl(), { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state) })
+    .then(r => {
+      if (r.ok) {
+        _lastSavedHash = h;
+        const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        saveInd.textContent = '\u2713 Saved '+t; saveInd.className = 'save-ind saved';
+        setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
+      } else { saveInd.textContent='\u2715 Save failed'; saveInd.className='save-ind error'; }
+    })
+    .catch(() => { saveInd.textContent='\u2715 Offline'; saveInd.className='save-ind error'; });
+}
+
+function pollForChanges() {
+  fetch(apiUrl(), { cache:'no-store' })
+    .then(r => { if (r.status===200) return r.json(); return null; })
+    .then(state => {
+      if (!state) return;
+      const h = hashState(state);
+      if (h!==_lastSavedHash) {
+        applyState(state);
+        saveInd.textContent='\u21bb Synced'; saveInd.className='save-ind synced';
+        setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 2000);
+      }
+    })
+    .catch(() => {});
+}
+
+document.addEventListener('mouseup', () => { if (_saveTimer===null) setTimeout(schedSave, 200); });
+
+// ══════════════════════════════════════════════════════
+// ── TAB SWITCHING ────────────────────────────────────
+// ══════════════════════════════════════════════════════
+function switchTab(tab) {
+  if (tab===activeTab) return;
+  doSave();
+  activeTab = tab;
+  location.hash = tab;
+  _lastSavedHash = '';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  renderChart(tab);
+  renderHeader(tab);
+  renderFootnotes(tab);
+  saveInd.textContent = '\u25cf Loading\u2026'; saveInd.className = 'save-ind saving';
+  fetch(apiUrl(), { cache:'no-store' })
+    .then(r => { if (r.status===200) return r.json(); return null; })
+    .then(state => {
+      if (state) applyState(state);
+      saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
+      setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 1500);
+    })
+    .catch(() => { saveInd.textContent='\u2715 Offline'; saveInd.className='save-ind error'; });
+}
+
+// ══════════════════════════════════════════════════════
+// ── INITIAL RENDER ───────────────────────────────────
+// ══════════════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===activeTab));
+renderChart(activeTab);
+renderHeader(activeTab);
+renderFootnotes(activeTab);
+
+fetch(apiUrl(), { cache:'no-store' })
+  .then(r => { if (r.status===200) return r.json(); return null; })
+  .then(state => {
+    if (state) applyState(state);
+    _pollTimer = setInterval(pollForChanges, 5000);
+  })
+  .catch(() => { _pollTimer = setInterval(pollForChanges, 5000); });
+
+// Zoom removed — chart uses percentage layout that fills viewport
+</script>
+</body>
+</html>

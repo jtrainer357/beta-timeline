@@ -2234,7 +2234,11 @@ function renderFootnotes(tabKey) {
     container.appendChild(card);
   });
 
-  // Attach footnote title editing
+  attachFootnoteHandlers();
+}
+
+function attachFootnoteHandlers() {
+  // Title editing
   document.querySelectorAll('.fn-card h4').forEach(el => {
     el.style.cursor = 'text';
     el.addEventListener('dblclick', (e) => {
@@ -2255,7 +2259,7 @@ function renderFootnotes(tabKey) {
     });
   });
 
-  // Attach footnote bullet/paragraph editing handlers
+  // Bullet/paragraph editing
   document.querySelectorAll('.fn-card li, .fn-card p').forEach(el => {
     el.style.cursor = 'text';
     el.addEventListener('dblclick', (e) => {
@@ -2272,14 +2276,11 @@ function renderFootnotes(tabKey) {
       } else {
         const inp = document.createElement('input');
         inp.className = 'ii'; inp.style.fontSize = '12px';
-        // Get text without the delete button
-        const delBtn = el.querySelector('.li-del');
         inp.value = el.childNodes[0]?.textContent || el.textContent;
         el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
         const done = () => {
           const val = inp.value.trim() || inp.value;
           el.textContent = val;
-          // Re-add delete button
           const newDel = document.createElement('button');
           newDel.className = 'li-del'; newDel.title = 'Delete item'; newDel.innerHTML = '&times;';
           newDel.addEventListener('click', (ev) => { ev.stopPropagation(); el.remove(); schedSave(); });
@@ -2292,12 +2293,11 @@ function renderFootnotes(tabKey) {
     });
   });
 
-  // Attach bullet delete handlers
+  // Bullet delete
   document.querySelectorAll('.fn-card .li-del').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const li = btn.parentElement;
-      li.remove();
+      btn.parentElement.remove();
       schedSave();
     });
   });
@@ -2488,23 +2488,11 @@ function applyState(state) {
         if (h4 && fn.title) h4.textContent = fn.title;
         const ul = cards[i].querySelector('ul'), para = cards[i].querySelector('p');
         if (fn.items && fn.items.length > 0 && ul) {
-          ul.innerHTML = '';
-          fn.items.forEach(txt => {
-            const li = document.createElement('li'); li.textContent = txt; li.style.cursor = 'text';
-            li.addEventListener('dblclick', (e) => {
-              e.stopPropagation(); if (li.querySelector('input')) return;
-              const orig = li.textContent;
-              const inp = document.createElement('input'); inp.className = 'ii'; inp.style.fontSize = '12px'; inp.value = orig;
-              li.textContent = ''; li.appendChild(inp); inp.focus(); inp.select();
-              const done = () => { li.textContent = inp.value.trim() || orig; schedSave(); };
-              inp.addEventListener('blur', done);
-              inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } if (ev.key === 'Escape') li.textContent = orig; });
-            });
-            ul.appendChild(li);
-          });
+          ul.innerHTML = fn.items.map(txt => `<li>${txt}<button class="li-del" title="Delete item">&times;</button></li>`).join('');
         }
         if (fn.para !== null && para) para.textContent = fn.para;
       });
+      attachFootnoteHandlers();
     }
     if (state.zoom !== undefined) setZoom(state.zoom); else setZoom(1);
     if (state.tabNames) {

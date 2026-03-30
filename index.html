@@ -1743,7 +1743,18 @@ function attachBarHandlers(barEl, gi, ri, bi) {
     txtEl.textContent = '';
     txtEl.appendChild(inp);
     inp.focus(); inp.select();
-    const done = () => { txtEl.textContent = inp.value.trim() || original; if (typeof schedSave==='function') schedSave(); };
+    const done = () => {
+      const newName = inp.value.trim() || original;
+      txtEl.textContent = newName;
+      // Persist rename into bar data so it survives save/load
+      const bar = getBar();
+      if (bar) {
+        const parts = bar.tip.split('\u00b7');
+        parts[0] = newName + ' ';
+        bar.tip = parts.join('\u00b7');
+      }
+      if (typeof schedSave==='function') schedSave();
+    };
     inp.addEventListener('blur', done);
     inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape'){txtEl.textContent=original;} });
     inp.addEventListener('mousedown', (ev) => ev.stopPropagation());

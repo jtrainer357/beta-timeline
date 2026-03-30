@@ -2096,93 +2096,100 @@ let _pollTimer = null;
 let _lastSavedHash = '';
 
 function getState() {
-  const barState = [];
-  document.querySelectorAll('.bar').forEach(b => {
-    barState.push({ gi:+b.dataset.gi, ri:+b.dataset.ri, bi:+b.dataset.bi,
-      left:b.style.left, width:b.style.width, txt:b.querySelector('.bar-txt')?.textContent||'' });
+  // Sync any DOM text edits back into currentGroups before saving
+  let rowIdx = 0;
+  const rowEls = document.querySelectorAll('.c-row');
+  currentGroups.forEach((g, gi) => {
+    g.rows.forEach((row, ri) => {
+      if (rowEls[rowIdx]) {
+        const n = rowEls[rowIdx].querySelector('.row-name');
+        const s = rowEls[rowIdx].querySelector('.row-sub');
+        if (n) row.name = n.textContent;
+        if (s) row.sub = s.textContent;
+      }
+      rowIdx++;
+    });
   });
-  const trackState = [];
-  document.querySelectorAll('.c-row .row-stub').forEach(stub => {
-    const name=stub.querySelector('.row-name'), sub=stub.querySelector('.row-sub');
-    trackState.push({ name:name?name.textContent:'', sub:sub?sub.textContent:'' });
+  document.querySelectorAll('.grp-label').forEach((el, i) => {
+    if (currentGroups[i]) currentGroups[i].label = el.textContent;
   });
-  const grpState = [];
-  document.querySelectorAll('.grp-label').forEach(g => grpState.push(g.textContent));
-  const msState = currentMilestones.map((m,i) => ({
-    date:m.date, name:m.name, sub:m.sub, left:document.getElementById('ms-'+i)?.style.left||''
-  }));
+  currentMilestones.forEach((m, i) => {
+    const msEl = document.getElementById('ms-' + i);
+    if (msEl) {
+      const n = msEl.querySelector('.ms-name');
+      const d = msEl.querySelector('.ms-date');
+      if (n) m.name = n.textContent;
+      if (d) m.sub = d.textContent;
+    }
+  });
   const fnState = [];
   document.querySelectorAll('.fn-card').forEach(card => {
-    const title=card.querySelector('h4')?.textContent||'';
-    const items=[]; card.querySelectorAll('li').forEach(li => items.push(li.textContent));
-    const para=card.querySelector('p');
-    fnState.push({ title, items, para:para?para.textContent:null });
+    const title = card.querySelector('h4')?.textContent || '';
+    const items = []; card.querySelectorAll('li').forEach(li => items.push(li.textContent));
+    const para = card.querySelector('p');
+    fnState.push({ title, items: items.length ? items : null, para: para ? para.textContent : null });
   });
-  return { barState, trackState, grpState, msState, fnState, zoom:currentZoom, tabNames, saved:new Date().toISOString() };
+  return {
+    v: 2,
+    groups: JSON.parse(JSON.stringify(currentGroups)),
+    milestones: JSON.parse(JSON.stringify(currentMilestones)),
+    fnState,
+    zoom: currentZoom,
+    tabNames,
+    saved: new Date().toISOString()
+  };
 }
 
 function hashState(state) {
-  return JSON.stringify(state.barState)+JSON.stringify(state.trackState)+JSON.stringify(state.grpState)+JSON.stringify(state.msState)+JSON.stringify(state.fnState)+(state.zoom||1)+JSON.stringify(state.tabNames||{});
+  return JSON.stringify(state.groups || state.barState) + JSON.stringify(state.milestones || state.msState) + JSON.stringify(state.fnState) + (state.zoom || 1) + JSON.stringify(state.tabNames || {});
 }
 
 function applyState(state) {
   if (!state) return;
-  if (state.barState) {
-    state.barState.forEach(bs => {
-      const bar = document.querySelector(`.bar[data-gi="${bs.gi}"][data-ri="${bs.ri}"][data-bi="${bs.bi}"]`);
-      if (bar) { bar.style.left=bs.left; bar.style.width=bs.width;
-        const txt=bar.querySelector('.bar-txt'); if (txt&&bs.txt) txt.textContent=bs.txt; }
-    });
-  }
-  if (state.trackState) {
-    const stubs = document.querySelectorAll('.c-row .row-stub');
-    state.trackState.forEach((ts,i) => {
-      if (stubs[i]) { const name=stubs[i].querySelector('.row-name'), sub=stubs[i].querySelector('.row-sub');
-        if (name&&ts.name) name.textContent=ts.name; if (sub&&ts.sub) sub.textContent=ts.sub; }
-    });
-  }
-  if (state.grpState) {
-    const grps = document.querySelectorAll('.grp-label');
-    state.grpState.forEach((g,i) => { if (grps[i]&&g) grps[i].textContent=g; });
-  }
-  if (state.msState) {
-    state.msState.forEach((ms,i) => {
-      if (!currentMilestones[i]) return;
-      currentMilestones[i].date=ms.date; currentMilestones[i].name=ms.name; currentMilestones[i].sub=ms.sub;
-      const msEl = document.getElementById('ms-'+i);
-      if (msEl&&ms.left) { msEl.style.left=ms.left;
-        const nameEl=msEl.querySelector('.ms-name'), dateEl=msEl.querySelector('.ms-date');
-        if (nameEl) nameEl.textContent=ms.name; if (dateEl) dateEl.textContent=ms.sub; }
-      const vl = document.getElementById('ms-vline-'+i);
-      if (vl&&ms.left) vl.style.left=ms.left;
-      if (i===currentBetaMsIndex) { BETA=new Date(ms.date); updateDelta(); }
-    });
-  }
-  if (state.fnState) {
-    const cards = document.querySelectorAll('.fn-card');
-    state.fnState.forEach((fn,i) => {
-      if (!cards[i]) return;
-      const ul=cards[i].querySelector('ul'), para=cards[i].querySelector('p');
-      if (fn.items&&fn.items.length>0&&ul) {
-        ul.innerHTML='';
-        fn.items.forEach(txt => {
-          const li=document.createElement('li'); li.textContent=txt; li.style.cursor='text';
-          li.addEventListener('dblclick', (e) => {
-            e.stopPropagation(); if (li.querySelector('input')) return;
-            const orig=li.textContent;
-            const inp=document.createElement('input'); inp.className='ii'; inp.style.fontSize='12px'; inp.value=orig;
-            li.textContent=''; li.appendChild(inp); inp.focus(); inp.select();
-            const done=()=>{li.textContent=inp.value.trim()||orig;schedSave();};
-            inp.addEventListener('blur',done);
-            inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();inp.blur();}if(ev.key==='Escape')li.textContent=orig;});
+  // v2 format: full structural data
+  if (state.v === 2 && state.groups) {
+    TABS[activeTab].groups = state.groups;
+    TABS[activeTab].milestones = state.milestones;
+    renderChart(activeTab);
+    if (state.fnState) {
+      const cards = document.querySelectorAll('.fn-card');
+      state.fnState.forEach((fn, i) => {
+        if (!cards[i]) return;
+        const h4 = cards[i].querySelector('h4');
+        if (h4 && fn.title) h4.textContent = fn.title;
+        const ul = cards[i].querySelector('ul'), para = cards[i].querySelector('p');
+        if (fn.items && fn.items.length > 0 && ul) {
+          ul.innerHTML = '';
+          fn.items.forEach(txt => {
+            const li = document.createElement('li'); li.textContent = txt; li.style.cursor = 'text';
+            li.addEventListener('dblclick', (e) => {
+              e.stopPropagation(); if (li.querySelector('input')) return;
+              const orig = li.textContent;
+              const inp = document.createElement('input'); inp.className = 'ii'; inp.style.fontSize = '12px'; inp.value = orig;
+              li.textContent = ''; li.appendChild(inp); inp.focus(); inp.select();
+              const done = () => { li.textContent = inp.value.trim() || orig; schedSave(); };
+              inp.addEventListener('blur', done);
+              inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } if (ev.key === 'Escape') li.textContent = orig; });
+            });
+            ul.appendChild(li);
           });
-          ul.appendChild(li);
-        });
-      }
-      if (fn.para!==null&&para) para.textContent=fn.para;
-    });
+        }
+        if (fn.para !== null && para) para.textContent = fn.para;
+      });
+    }
+    if (state.zoom !== undefined) setZoom(state.zoom); else setZoom(1);
+    if (state.tabNames) {
+      Object.assign(tabNames, state.tabNames);
+      document.querySelectorAll('.tab').forEach(t => {
+        const key = t.dataset.tab;
+        if (tabNames[key]) t.textContent = tabNames[key];
+      });
+    }
+    _lastSavedHash = hashState(state);
+    return;
   }
-  if (state.zoom !== undefined) { setZoom(state.zoom); } else { setZoom(1); }
+  // v1 legacy format — ignore stale index-based data, just apply zoom/tabNames
+  if (state.zoom !== undefined) setZoom(state.zoom); else setZoom(1);
   if (state.tabNames) {
     Object.assign(tabNames, state.tabNames);
     document.querySelectorAll('.tab').forEach(t => {

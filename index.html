@@ -780,7 +780,7 @@ body {
 const START   = new Date('2026-03-03');
 const END     = new Date('2026-12-31');
 const TODAY   = new Date(); TODAY.setHours(0,0,0,0);
-const D90     = new Date('2026-06-30');
+let D90       = new Date('2026-06-30');
 const TOTAL   = (END - START) / 864e5;
 
 function p(d)     { return ((d - START) / 864e5 / TOTAL * 100).toFixed(3) + '%'; }
@@ -1041,6 +1041,7 @@ const TABS = {
   jay: {
     groups: jayGroups, milestones: jayMilestones,
     betaDate: '2026-07-15', betaMsIndex: 1,
+    d90Date: null, d90MsIndex: null,
     msLineColors: { 0: '#FF8D6E' },
     header: {
       title: 'Beta <strong>Timeline Hypothesis</strong>',
@@ -1075,6 +1076,7 @@ const TABS = {
   cait: {
     groups: caitGroups, milestones: caitMilestones,
     betaDate: '2026-06-30', betaMsIndex: 1,
+    d90Date: '2026-06-30', d90MsIndex: 1,
     msLineColors: { 0: '#6D28D9' },
     header: {
       title: "Cait's Beta Readiness \u2014 <strong>All 5 Jobs by June 30</strong>",
@@ -1304,6 +1306,7 @@ const TABS = {
       ],
       betaDate: '2026-08-22',
       betaMsIndex: 5,
+      d90Date: null, d90MsIndex: null,
       msLineColors: { 0: '#6D28D9', 1: '#6D28D9', 2: '#6D28D9', 3: '#6D28D9', 4: '#6D28D9', 5: '#D94040', 6: '#6D28D9' },
       header: {
         title: 'Rich\'s Milestone 1 \u2014 <strong>Deliver Care (17\u201320 weeks)</strong>',
@@ -1445,6 +1448,7 @@ const TABS = {
       ],
       betaDate: '2026-06-01',
       betaMsIndex: 3,
+      d90Date: null, d90MsIndex: null,
       msLineColors: { 3: '#D94040' },
       header: {
         title: 'Beta <strong>Timeline Hypothesis</strong>',
@@ -1589,6 +1593,7 @@ const TABS = {
       ],
       betaDate: '2026-08-23',
       betaMsIndex: 2,
+      d90Date: '2026-06-30', d90MsIndex: 1,
       msLineColors: { 0: '#3D8F8A', 1: '#FF8D6E' },
       header: {
         title: 'Road to <strong>MVP</strong>',
@@ -1628,6 +1633,7 @@ const TABS = {
 let currentGroups = null;
 let currentMilestones = null;
 let currentBetaMsIndex = 0;
+let currentD90MsIndex = null;
 let BETA = new Date('2026-07-15');
 
 const body = document.getElementById('chart-body');
@@ -1783,6 +1789,14 @@ function attachMilestoneHandlers(msEl, i) {
       currentMilestones[i].date = fmtDate(nd);
       currentMilestones[i].sub = fmtShort(nd);
       if (i===currentBetaMsIndex) { BETA=nd; updateDelta(); if (betaLine) betaLine.style.left=newPct.toFixed(3)+'%'; }
+      if (i===currentD90MsIndex) {
+        D90=nd;
+        const d90LineEl = document.getElementById('d90-line');
+        if (d90LineEl) d90LineEl.style.left = newPct.toFixed(3)+'%';
+        const d90LblEl = document.getElementById('d90-lbl');
+        if (d90LblEl) d90LblEl.style.left = newPct.toFixed(3)+'%';
+        updateDelta();
+      }
     }
     function onUp() {
       diamond.style.cursor = '';
@@ -1873,6 +1887,12 @@ function renderChart(tabKey) {
   currentMilestones = tab.milestones;
   currentBetaMsIndex = tab.betaMsIndex;
   BETA = new Date(tab.betaDate);
+  currentD90MsIndex = tab.d90MsIndex;
+  if (currentD90MsIndex != null && currentMilestones[currentD90MsIndex]) {
+    D90 = new Date(currentMilestones[currentD90MsIndex].date);
+  } else if (tab.d90Date) {
+    D90 = new Date(tab.d90Date);
+  }
 
   body.innerHTML = '';
   if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
@@ -1955,6 +1975,7 @@ function renderChart(tabKey) {
   overlay.appendChild(tl);
 
   const dl = document.createElement('div');
+  dl.id = 'd90-line';
   dl.style.cssText = `position:absolute;left:${p(D90)};top:0;bottom:0;width:2px;opacity:.85;background:repeating-linear-gradient(to bottom,var(--d90-c) 0,var(--d90-c) 6px,transparent 6px,transparent 12px);`;
   overlay.appendChild(dl);
 

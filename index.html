@@ -256,6 +256,29 @@ body {
 }
 .row-delete:hover { background: var(--red-bg); color: var(--red); }
 .c-row:hover .row-delete { display: flex; }
+.grp-delete {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: var(--txt-s);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: all .12s;
+}
+.grp-delete:hover { background: var(--red-bg); color: var(--red); }
+.grp-hdr:hover .grp-delete { display: flex; }
 .ms-stub { background: var(--bg-hdr); }
 
 /* ── MONTH HEADER ─────────────────────────── */
@@ -1783,6 +1806,29 @@ function deleteRow(gi, ri) {
   schedSave();
 }
 
+function deleteGroup(gi) {
+  pushUndo();
+  currentGroups.splice(gi, 1);
+  renderChart(activeTab);
+  renderHeader(activeTab);
+  renderFootnotes(activeTab);
+  schedSave();
+}
+
+function addGroup() {
+  pushUndo();
+  const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
+  const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
+  currentGroups.push({
+    label: 'New Swimlane',
+    rows: [{ name: 'New task', sub: '', bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: '#8CA7A2', conf: null, tip: 'New task' }] }]
+  });
+  renderChart(activeTab);
+  renderHeader(activeTab);
+  renderFootnotes(activeTab);
+  schedSave();
+}
+
 function addRow(gi) {
   pushUndo();
   // Default: 2-week bar using the swimlane's dominant color (most common non-critical bar color)
@@ -1819,7 +1865,7 @@ function renderChart(tabKey) {
   currentGroups.forEach((g, gi) => {
     const gh = document.createElement('div');
     gh.className = 'grp-hdr';
-    gh.innerHTML = `<div class="grp-stub"><span class="grp-label">${g.label}</span></div><div class="grp-track"></div>`;
+    gh.innerHTML = `<div class="grp-stub"><span class="grp-label">${g.label}</span><button class="grp-delete" data-gi="${gi}" title="Delete swimlane">&times;</button></div><div class="grp-track"></div>`;
     body.appendChild(gh);
 
     g.rows.forEach((row, ri) => {
@@ -1849,6 +1895,13 @@ function renderChart(tabKey) {
     addRowRow.querySelector('.add-row-btn').addEventListener('click', () => addRow(gi));
     body.appendChild(addRowRow);
   });
+
+  // Add swimlane button
+  const addGrpRow = document.createElement('div');
+  addGrpRow.className = 'add-row-row';
+  addGrpRow.innerHTML = `<div class="add-row-stub"><button class="add-row-btn" title="Add swimlane" style="font-size:11px;">+</button><span style="font-size:10px;color:var(--txt-s);margin-left:6px;">Swimlane</span></div><div class="add-row-track"></div>`;
+  addGrpRow.querySelector('.add-row-btn').addEventListener('click', addGroup);
+  body.appendChild(addGrpRow);
 
   // Milestone row
   const msRow = document.createElement('div');
@@ -1921,6 +1974,9 @@ function renderChart(tabKey) {
   document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(makeEditable);
   document.querySelectorAll('.row-delete').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); deleteRow(+btn.dataset.gi, +btn.dataset.ri); });
+  });
+  document.querySelectorAll('.grp-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteGroup(+btn.dataset.gi); });
   });
   document.querySelectorAll('.bar').forEach(barEl => {
     attachBarHandlers(barEl, +barEl.dataset.gi, +barEl.dataset.ri, +barEl.dataset.bi);

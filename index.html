@@ -2195,6 +2195,7 @@ function applyState(state) {
 
 let _undoTimer = null;
 function schedSave() {
+  if (!_initialLoadDone) return;
   clearTimeout(_saveTimer);
   if (!_undoTimer) {
     _undoTimer = setTimeout(() => { pushUndo(); _undoTimer = null; }, 50);
@@ -2230,7 +2231,8 @@ async function pollForChanges() {
   }
 }
 
-document.addEventListener('mouseup', () => { if (_saveTimer===null) setTimeout(schedSave, 200); });
+let _initialLoadDone = false;
+document.addEventListener('mouseup', () => { if (_initialLoadDone && _saveTimer===null) setTimeout(schedSave, 200); });
 
 // ══════════════════════════════════════════════════════
 // ── TAB SWITCHING ────────────────────────────────────
@@ -2264,6 +2266,7 @@ initSupabase();
 loadState().then(state => {
   if (state) {
     applyState(state);
+    _lastSavedHash = hashState(state);
   } else {
     // Default zoom: frame the active timeline (a few weeks before today through just past 90-day)
     setZoom(2);
@@ -2278,6 +2281,7 @@ loadState().then(state => {
       scrollWrapper.scrollLeft = Math.max(0, scrollTarget);
     }, 50);
   }
+  _initialLoadDone = true;
   if (_supabase) _pollTimer = setInterval(pollForChanges, 5000);
 });
 

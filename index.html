@@ -1668,6 +1668,25 @@ let deltaLabel = null;
 
 const TBD_COLOR = '#FF8D6E';
 
+// Tebra-branded swimlane color palette — no two lanes share a color
+const LANE_COLORS = [
+  '#004952',  // Growth — deep teal
+  '#3D8F8A',  // Growth Light — medium teal
+  '#3A7CA5',  // Steel — confident blue
+  '#6D28D9',  // Purple — bold accent
+  '#D95F3F',  // Darker coral — warm contrast
+  '#FF8D6E',  // Vitality — coral accent
+  '#8CA7A2',  // Core — sage
+  '#1A6FA8',  // Deep blue
+  '#2D6A4F',  // Forest green
+  '#7C5CBF',  // Lavender
+  '#B5651D',  // Warm amber
+  '#4A7C59',  // Moss
+  '#8B5E3C',  // Sienna
+  '#5A6364',  // Charcoal
+];
+function laneColor(gi) { return LANE_COLORS[gi % LANE_COLORS.length]; }
+
 function updateDelta() {
   if (!deltaEl || !deltaLabel || !betaLine) return;
   const d90pct  = ((D90 - START)/864e5/TOTAL*100);
@@ -1902,11 +1921,12 @@ function addMilestone() {
 
 function addGroup() {
   pushUndo();
+  const gi = currentGroups.length;
   const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
   const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
   currentGroups.push({
     label: 'New Swimlane',
-    rows: [{ name: 'New task', sub: '', bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: '#8CA7A2', conf: null, tip: 'New task' }] }]
+    rows: [{ name: 'New task', sub: '', bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: laneColor(gi), conf: null, tip: 'New task' }] }]
   });
   renderChart(activeTab);
   renderHeader(activeTab);
@@ -1916,18 +1936,11 @@ function addGroup() {
 
 function addRow(gi) {
   pushUndo();
-  // Default: 2-week bar using the swimlane's dominant color (most common non-critical bar color)
-  const group = currentGroups[gi];
-  const colorCounts = {};
-  group.rows.forEach(r => r.bars.forEach(b => {
-    if (b.color !== '#D94040') { colorCounts[b.color] = (colorCounts[b.color] || 0) + 1; }
-  }));
-  const defaultColor = Object.keys(colorCounts).sort((a,b) => colorCounts[b] - colorCounts[a])[0] || '#8CA7A2';
   const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
   const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
   const newRow = {
     name: 'New task', sub: '',
-    bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: defaultColor, conf: null, tip: 'New task' }]
+    bars: [{ s: fmtDate(startDate), e: fmtDate(endDate), color: laneColor(gi), conf: null, tip: 'New task' }]
   };
   group.rows.push(newRow);
   // Re-render to pick up the new row with all handlers
@@ -1960,7 +1973,7 @@ function renderChart(tabKey) {
   currentGroups.forEach((g, gi) => {
     const gh = document.createElement('div');
     gh.className = 'grp-hdr';
-    gh.innerHTML = `<div class="grp-stub"><span class="grp-label">${g.label}</span><button class="grp-delete" data-gi="${gi}" title="Delete swimlane">&times;</button></div><div class="grp-track"></div>`;
+    gh.innerHTML = `<div class="grp-stub"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${laneColor(gi)};margin-right:8px;flex-shrink:0;"></span><span class="grp-label">${g.label}</span><button class="grp-delete" data-gi="${gi}" title="Delete swimlane">&times;</button></div><div class="grp-track"></div>`;
     body.appendChild(gh);
 
     g.rows.forEach((row, ri) => {
@@ -1970,10 +1983,11 @@ function renderChart(tabKey) {
       row.bars.forEach((bar, bi) => {
         const left = p(dt(bar.s)), width = pw(dt(bar.s), dt(bar.e));
         const badge = '';
+        const barColor = laneColor(gi);
         const isTbd = (bar.color === TBD_COLOR);
         const barStyle = isTbd
           ? `left:${left};width:${width};background:var(--bg-alt);border:1.5px dashed ${TBD_COLOR};`
-          : `left:${left};width:${width};background:${bar.color};`;
+          : `left:${left};width:${width};background:${barColor};`;
         const txtStyle = isTbd ? ' style="color:#8B6914;"' : '';
         const displayTxt = bar.tip.split('\u00b7')[0].split('.')[0].trim();
         barsHTML += `<div class="bar" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">

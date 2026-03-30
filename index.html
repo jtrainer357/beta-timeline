@@ -1838,7 +1838,7 @@ function renderChart(tabKey) {
         barsHTML += `<div class="bar" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">
           <span class="bar-txt"${txtStyle}>${displayTxt}</span>${badge}<div class="bar-tip">${bar.tip}</div><div class="brh"></div></div>`;
       });
-      rowEl.innerHTML = `<div class="row-stub" style="position:relative;"><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div><button class="row-delete" data-gi="${gi}" data-ri="${ri}" title="Delete row">&times;</button></div><div class="row-track">${barsHTML}</div>`;
+      rowEl.innerHTML = `<div class="row-stub"><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div><button class="row-delete" data-gi="${gi}" data-ri="${ri}" title="Delete row">&times;</button></div><div class="row-track">${barsHTML}</div>`;
       body.appendChild(rowEl);
     });
 

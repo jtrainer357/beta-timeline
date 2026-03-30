@@ -578,7 +578,29 @@ body {
   margin-bottom: 1px;
 }
 .fn-card li::marker { color: var(--g-mid); }
-.fn-card li { cursor: text; }
+.fn-card li { cursor: text; position: relative; padding-right: 20px; }
+.fn-card li .li-del {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: var(--txt-s);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+.fn-card li .li-del:hover { background: var(--red-bg); color: var(--red); }
+.fn-card li:hover .li-del { display: flex; }
 .fn-card p { cursor: text; }
 .add-bullet {
   display: flex;
@@ -2067,8 +2089,9 @@ function renderChart(tabKey) {
   // Always show 90-DAY label
   document.getElementById('d90-lbl').style.display = '';
 
-  // Milestone dotted lines
+  // Milestone dotted lines (skip beta/D90 — they have dedicated overlay lines)
   currentMilestones.forEach((m, i) => {
+    if (i === currentBetaMsIndex || i === currentD90MsIndex) return;
     const vl = document.createElement('div');
     vl.className = 'vl-ms'; vl.id = 'ms-vline-'+i;
     vl.style.left = p(dt(m.date));
@@ -2123,14 +2146,35 @@ function renderFootnotes(tabKey) {
     const card = document.createElement('div');
     card.className = 'fn-card'; card.id = 'fn-'+i;
     let content = `<h4>${fn.title}</h4>`;
-    if (fn.items) content += '<ul>' + fn.items.map(item => `<li>${item}</li>`).join('') + '</ul>';
+    if (fn.items) content += '<ul>' + fn.items.map(item => `<li>${item}<button class="li-del" title="Delete item">&times;</button></li>`).join('') + '</ul>';
     if (fn.para) content += `<p>${fn.para}</p>`;
     content += `<button class="add-bullet" onclick="addBullet('fn-${i}')">+ Add item</button>`;
     card.innerHTML = content;
     container.appendChild(card);
   });
 
-  // Attach footnote editing handlers
+  // Attach footnote title editing
+  document.querySelectorAll('.fn-card h4').forEach(el => {
+    el.style.cursor = 'text';
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (el.querySelector('input')) return;
+      const original = el.textContent;
+      const inp = document.createElement('input');
+      inp.className = 'ii';
+      inp.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;';
+      inp.value = original;
+      el.textContent = '';
+      el.appendChild(inp);
+      inp.focus(); inp.select();
+      const done = () => { el.textContent = inp.value.trim() || original; schedSave(); };
+      inp.addEventListener('blur', done);
+      inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape') el.textContent=original; });
+      inp.addEventListener('mousedown', (ev) => ev.stopPropagation());
+    });
+  });
+
+  // Attach footnote bullet/paragraph editing handlers
   document.querySelectorAll('.fn-card li, .fn-card p').forEach(el => {
     el.style.cursor = 'text';
     el.addEventListener('dblclick', (e) => {
@@ -2146,12 +2190,34 @@ function renderFootnotes(tabKey) {
         ta.addEventListener('keydown', (ev) => { if (ev.key==='Escape') el.innerHTML = original; });
       } else {
         const inp = document.createElement('input');
-        inp.className = 'ii'; inp.style.fontSize = '12px'; inp.value = el.textContent;
+        inp.className = 'ii'; inp.style.fontSize = '12px';
+        // Get text without the delete button
+        const delBtn = el.querySelector('.li-del');
+        inp.value = el.childNodes[0]?.textContent || el.textContent;
         el.textContent = ''; el.appendChild(inp); inp.focus(); inp.select();
-        const done = () => { el.textContent = inp.value.trim() || el.textContent; schedSave(); };
+        const done = () => {
+          const val = inp.value.trim() || inp.value;
+          el.textContent = val;
+          // Re-add delete button
+          const newDel = document.createElement('button');
+          newDel.className = 'li-del'; newDel.title = 'Delete item'; newDel.innerHTML = '&times;';
+          newDel.addEventListener('click', (ev) => { ev.stopPropagation(); el.remove(); schedSave(); });
+          el.appendChild(newDel);
+          schedSave();
+        };
         inp.addEventListener('blur', done);
         inp.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp.blur();} if (ev.key==='Escape') el.innerHTML=original; });
       }
+    });
+  });
+
+  // Attach bullet delete handlers
+  document.querySelectorAll('.fn-card .li-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const li = btn.parentElement;
+      li.remove();
+      schedSave();
     });
   });
 }
@@ -2165,15 +2231,27 @@ function addBullet(cardId) {
   li.textContent = ''; li.appendChild(inp); inp.focus();
   const done = () => {
     const v = inp.value.trim();
-    if (!v) { li.remove(); } else { li.textContent = v; }
+    if (!v) { li.remove(); return schedSave(); }
+    li.textContent = v;
+    // Add delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'li-del'; delBtn.title = 'Delete item'; delBtn.innerHTML = '&times;';
+    delBtn.addEventListener('click', (ev) => { ev.stopPropagation(); li.remove(); schedSave(); });
+    li.appendChild(delBtn);
     li.addEventListener('dblclick', (e) => {
       e.stopPropagation(); if (li.querySelector('input')) return;
-      const orig = li.textContent;
-      const inp2 = document.createElement('input'); inp2.className='ii'; inp2.style.fontSize='12px'; inp2.value=orig;
+      const orig = li.innerHTML;
+      const inp2 = document.createElement('input'); inp2.className='ii'; inp2.style.fontSize='12px'; inp2.value=li.childNodes[0]?.textContent||li.textContent;
       li.textContent=''; li.appendChild(inp2); inp2.focus(); inp2.select();
-      const done2 = () => { li.textContent=inp2.value.trim()||orig; schedSave(); };
+      const done2 = () => {
+        li.textContent=inp2.value.trim()||li.textContent;
+        const d = document.createElement('button'); d.className='li-del'; d.title='Delete item'; d.innerHTML='&times;';
+        d.addEventListener('click', (ev) => { ev.stopPropagation(); li.remove(); schedSave(); });
+        li.appendChild(d);
+        schedSave();
+      };
       inp2.addEventListener('blur', done2);
-      inp2.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp2.blur();} if (ev.key==='Escape') li.textContent=orig; });
+      inp2.addEventListener('keydown', (ev) => { if (ev.key==='Enter'){ev.preventDefault();inp2.blur();} if (ev.key==='Escape') li.innerHTML=orig; });
     });
     li.style.cursor = 'text';
     schedSave();

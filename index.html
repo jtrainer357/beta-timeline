@@ -1942,7 +1942,11 @@ function renderChart(tabKey) {
   currentGroups = tab.groups;
   currentMilestones = tab.milestones;
   currentBetaMsIndex = tab.betaMsIndex;
-  BETA = new Date(tab.betaDate);
+  if (currentBetaMsIndex != null && currentMilestones[currentBetaMsIndex]) {
+    BETA = new Date(currentMilestones[currentBetaMsIndex].date);
+  } else {
+    BETA = new Date(tab.betaDate);
+  }
   currentD90MsIndex = tab.d90MsIndex;
   if (currentD90MsIndex != null && currentMilestones[currentD90MsIndex]) {
     D90 = new Date(currentMilestones[currentD90MsIndex].date);

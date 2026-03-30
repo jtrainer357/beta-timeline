@@ -2228,6 +2228,8 @@ async function doSave() {
 }
 
 async function pollForChanges() {
+  // Don't re-render while user is actively editing
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
   const state = await loadState();
   if (!state) return;
   const h = hashState(state);

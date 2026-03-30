@@ -1771,7 +1771,7 @@ function attachMilestoneHandlers(msEl, i) {
       dateEl.textContent = fmtShort(nd);
       currentMilestones[i].date = fmtDate(nd);
       currentMilestones[i].sub = fmtShort(nd);
-      if (i===currentBetaMsIndex) { BETA=nd; updateDelta(); }
+      if (i===currentBetaMsIndex) { BETA=nd; updateDelta(); if (betaLine) betaLine.style.left=newPct.toFixed(3)+'%'; }
     }
     function onUp() {
       diamond.style.cursor = '';
@@ -1959,9 +1959,8 @@ function renderChart(tabKey) {
   // Always show 90-DAY label
   document.getElementById('d90-lbl').style.display = '';
 
-  // Milestone dotted lines (skip the beta milestone — D90 line covers it)
+  // Milestone dotted lines
   currentMilestones.forEach((m, i) => {
-    if (i === currentBetaMsIndex) return;
     const vl = document.createElement('div');
     vl.className = 'vl-ms'; vl.id = 'ms-vline-'+i;
     vl.style.left = p(dt(m.date));

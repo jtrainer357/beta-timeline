@@ -714,7 +714,8 @@ body {
 <div class="footnotes" id="footnotes"></div>
 
 <div class="tab-bar">
-  <div class="tab active" data-tab="syd" onclick="switchTab('syd')">Beta (Revised)</div>
+  <div class="tab" data-tab="syd" onclick="switchTab('syd')">Beta (Revised)</div>
+  <div class="tab active" data-tab="mvp" onclick="switchTab('mvp')">Road To MVP</div>
   <div style="flex:1;"></div>
   <span class="archived-label">ARCHIVED</span>
   <div class="tab archived" data-tab="jay" onclick="switchTab('jay')">Jay</div>
@@ -1427,6 +1428,146 @@ const TABS = {
           'Can 10\u201315 providers operate on real PHI with full HIPAA compliance on Vercel + Supabase?'] }
       ]
     };
+  })(),
+  mvp: (() => {
+    const MC = {
+      high:     { label: 'HIGH',          bg: '#004952' },
+      medium:   { label: 'MEDIUM',        bg: '#CC6F4E' },
+      medlow:   { label: 'MED-LOW',       bg: '#B84A2E' },
+      critical: { label: 'CRITICAL PATH', bg: '#A52D2D' },
+      estimate: { label: 'ESTIMATE',      bg: '#CC6F4E' },
+    };
+    const M = {
+      design:     '#8CA7A2',
+      eng:        '#3D8F8A',
+      critical:   '#D94040',
+      compliance: '#E8875F',
+      t1:         '#004952',
+      t2:         '#3A7CA5',
+      infra:      'rgba(61,143,138,0.55)',
+    };
+    return {
+      groups: [
+        // ══ PRE-JUNE 30: FIRST SLICE ══════════════════════
+        { label: 'First Slice \u2014 Product Design (Jay)', rows: [
+          { name: 'Design system + component specs', sub: 'Design system tokens',
+            bars: [{ s:'2026-04-06', e:'2026-04-18', color:M.design, conf:MC.high,
+              tip:'Token definitions, component specs. Design system tokens, component library, interaction patterns.' }] },
+          { name: 'IA architecture + flow diagrams', sub: 'IA + canvas architecture',
+            bars: [{ s:'2026-04-06', e:'2026-04-15', color:M.design, conf:MC.high,
+              tip:'Canvas architecture, nav. Dynamic canvas architecture, navigation model, JTBD phase mapping.' }] },
+          { name: 'Job 3 wireframes (Deliver Care)', sub: 'AI note gen + HITL review \u00b7 PRIMARY FIRST SLICE',
+            bars: [{ s:'2026-04-14', e:'2026-05-02', color:M.design, conf:MC.high,
+              tip:'SOAP note generation UI, HITL review. AI note gen UI, HITL review flow, provenance badges, clinical summary. PRIMARY FIRST SLICE DELIVERABLE.' }] },
+          { name: 'Job 1 & 2 wireframes', sub: 'Appointments + prep flows',
+            bars: [{ s:'2026-04-21', e:'2026-05-09', color:M.design, conf:MC.medium,
+              tip:'Scheduling views, daily dashboard. Appointments + prep flows \u2014 feeds into post-June 30 T1/T2 tracks.' }] },
+          { name: 'Job 4 + cross-cutting wireframes', sub: 'Payments + Patient 360',
+            bars: [{ s:'2026-05-05', e:'2026-05-23', color:M.design, conf:MC.medium,
+              tip:'Payment flows, fee schedule config, Patient 360. Payments + Patient 360 \u2014 feeds into post-June 30 T2 track.' }] },
+          { name: 'Design QA + polish', sub: 'QA, responsive, transitions',
+            bars: [{ s:'2026-05-19', e:'2026-06-20', color:M.design, conf:MC.medlow,
+              tip:'Pixel-level QA, responsive refinement, dynamic canvas. QA against specs, responsive refinement, dynamic canvas transitions.' }] },
+          { name: 'Provider onboarding UX', sub: 'Onboarding flows',
+            bars: [{ s:'2026-06-16', e:'2026-06-30', color:M.design, conf:MC.medlow,
+              tip:'First-run experience, practice setup. Onboarding flows for beta cohort.' }] },
+        ]},
+        { label: 'First Slice \u2014 Engineering (EJ + Vince \u00b7 2 FTE)', rows: [
+          { name: 'Foundation', sub: 'Supabase + Auth + RLS + DB schema',
+            bars: [{ s:'2026-04-06', e:'2026-04-25', color:M.critical, conf:MC.critical,
+              tip:'Supabase HIPAA project, Auth + MFA. Supabase HIPAA project, Auth0, RLS policies, DB schema, encryption, seed data. CRITICAL PATH.' }] },
+          { name: 'Core workflows', sub: 'Appointments + dashboard + notifications',
+            bars: [{ s:'2026-04-21', e:'2026-05-09', color:M.eng, conf:MC.high,
+              tip:'Appointments, scheduling, state machine, notifications. Appointments, scheduling, in-app notifications, daily schedule, Items Needing Attention.' }] },
+          { name: 'AI integration', sub: 'LLM streaming + SOAP notes + RAG',
+            bars: [{ s:'2026-04-28', e:'2026-05-23', color:M.critical, conf:MC.critical,
+              tip:'LLM streaming via Vercel AI SDK, SOAP note gen, review. LLM streaming, SOAP note gen, review/approval, data extraction, RAG. CRITICAL PATH \u2014 First Slice core.' }] },
+          { name: 'Payments + records', sub: 'Stripe + Patient 360 + global search',
+            bars: [{ s:'2026-05-19', e:'2026-06-13', color:M.eng, conf:MC.medium,
+              tip:'Stripe integration, fee schedule, longitudinal record. Stripe, fee schedule, Patient 360, global search.' }] },
+          { name: 'Hardening + polish', sub: 'Audit + load test + pen test + E2E',
+            bars: [{ s:'2026-06-09', e:'2026-06-27', color:M.eng, conf:MC.medlow,
+              tip:'Audit logging, RLS audit, load testing. Audit, load test, pen test, E2E testing.' }] },
+          { name: 'Bug fixes + stabilization', sub: 'Stabilization buffer',
+            bars: [{ s:'2026-06-23', e:'2026-06-30', color:M.eng, conf:MC.medlow,
+              tip:'Bug fixes, edge case handling, performance. Stabilization buffer leading into First Slice milestone.' }] },
+        ]},
+        { label: 'First Slice \u2014 Compliance & Legal (Cait + Attorney)', rows: [
+          { name: 'BAA procurement (all vendors)', sub: 'Supabase, OpenAI, Anthropic BAAs',
+            bars: [{ s:'2026-04-06', e:'2026-05-16', color:M.critical, conf:MC.critical,
+              tip:'Start ALL requests Day 1. Supabase, OpenAI, Anthropic BAAs. CRITICAL PATH.' }] },
+          { name: 'Risk assessment + privacy policies', sub: 'HIPAA risk assessment + policies',
+            bars: [{ s:'2026-04-14', e:'2026-05-30', color:M.compliance, conf:MC.medium,
+              tip:'HIPAA risk assessment, privacy policy drafting. NIST 800-66, privacy policies, AI consent forms, 42 CFR Part 2.' }] },
+          { name: 'Security policies + breach plan', sub: 'Security docs + breach plan',
+            bars: [{ s:'2026-05-19', e:'2026-06-13', color:M.compliance, conf:MC.medlow,
+              tip:'Security docs + breach plan. Security policies, breach notification plan, contingency plan.' }] },
+          { name: 'Final compliance sign-off', sub: 'Sign-off \u25c6',
+            bars: [{ s:'2026-06-23', e:'2026-06-30', color:M.compliance, conf:MC.medium,
+              tip:'Sign-off. All BAAs executed, policies finalized. Diamond milestone.' }] },
+        ]},
+        // ══ POST-JUNE 30: TIERED JTBD DELIVERY ═══════════
+        { label: 'Tiered Delivery \u2014 T1: JTBD #2 Prep for Day', rows: [
+          { name: 'Prep for Day: AI patient + Telehealth', sub: '6\u201312 week estimate',
+            bars: [{ s:'2026-06-30', e:'2026-08-08', color:M.t1, conf:MC.estimate,
+              tip:'AI patient prep, telehealth integration. Pre-session clinical snapshot, AI patient summary, Zoom Meetings SDK integration. 6\u201312 week estimate. Dates are approximate.' }] },
+          { name: 'Prepare for Day Pt. 2', sub: 'Extended prep workflow',
+            bars: [{ s:'2026-08-04', e:'2026-08-23', color:M.t1, conf:MC.estimate,
+              tip:'Day preparation refinement. Extended prep workflow, cross-patient day view. Dates are approximate.' }] },
+        ]},
+        { label: 'Tiered Delivery \u2014 T2: JTBD #1 Appointments', rows: [
+          { name: 'Appointments (T2)', sub: '2 weeks \u00b7 starts 2 wks post-milestone',
+            bars: [{ s:'2026-07-13', e:'2026-07-25', color:M.t2, conf:MC.estimate,
+              tip:'Appointment management. Full appointment management beyond basic scheduling. 2 week duration. Starts 2 weeks post-milestone. Dates are approximate.' }] },
+        ]},
+        { label: 'Tiered Delivery \u2014 T2: JTBD #4 Get Paid', rows: [
+          { name: 'Get Paid (T2)', sub: 'Sequential after JTBD#1 \u00b7 OK T3?',
+            bars: [{ s:'2026-07-28', e:'2026-08-23', color:M.t2, conf:MC.estimate,
+              tip:'Billing + payments. Cash-pay billing, Stripe flows, fee schedules. Sequential after JTBD#1. Note: "OK T3" \u2014 may slip to Tier 3 if needed. Dates are approximate.' }] },
+        ]},
+        { label: 'T1 Foundation \u2014 JTBD #5 Cross-cutting Platform Infra', rows: [
+          { name: 'Cross-cutting / platform infra', sub: 'Auth, data layer, permissions, settings \u00b7 Spans full timeline',
+            bars: [{ s:'2026-04-06', e:'2026-08-23', color:M.infra, conf:null,
+              tip:'Platform infrastructure. Spans entire timeline. Auth, data layer, permissions, settings, configuration. Continuous foundation work.' }] },
+        ]},
+      ],
+      milestones: [
+        { date:'2026-04-06', name:'Start Building', sub:'Apr 6' },
+        { date:'2026-06-30', name:'\u2b50 First Slice + Investment Gate', sub:'Jun 30' },
+        { date:'2026-08-23', name:'Beta', sub:'Aug 23' },
+      ],
+      betaDate: '2026-08-23',
+      betaMsIndex: 2,
+      msLineColors: { 0: '#3D8F8A', 1: '#FF8D6E' },
+      header: {
+        title: 'Road to <strong>MVP</strong>',
+        sub: 'Clarity BH \u00b7 Living document \u00b7 Updated weekly as new information comes in \u00b7 March 30, 2026',
+        pills: ['Start: April 6, 2026', '2 Eng + 1 Design + 1 Product', 'First Slice: June 30, 2026', 'Beta Target: August 23, 2026']
+      },
+      blocker: null,
+      footnotes: [
+        { title:'Strategic Framing', items:null,
+          para:'Two parallel validation objectives run through June 30: (1) "First Slice" \u2014 Deliver Care \u2014 validating the technical AI-native foundation via JTBD #3, proving the AI-assisted note-generation and clinical workflow works end-to-end. (2) Validating UX / Dynamic Canvas \u2014 proving the information-comes-to-you concept works for providers. Both converge on June 30, which is simultaneously the First Slice technical milestone and the Investment Activation gate where leadership decides to invest further.' },
+        { title:'Tier Definitions (Post-June 30)', para:null, items:[
+          '<strong>T1:</strong> Highest priority \u2014 must ship for beta. Solid forest green bars.',
+          '<strong>T2:</strong> Second priority \u2014 planned for beta window. Teal bars.',
+          '<strong>T3?:</strong> Under discussion \u2014 may defer or reabsorb into T2.',
+          '<strong>All post-June 30 dates are estimates</strong> derived from whiteboard positioning, not committed schedules.'] },
+        { title:'Key Parameters Changed', para:null, items:[
+          'Old plan: 5-week sprint to June 1 beta',
+          'New plan: 12-week First Slice (Apr 6 \u2192 Jun 30) + tiered JTBD delivery \u2192 Beta Aug 23',
+          'Team: 2 Eng + 1 Design + 1 Product (was 3 Eng + 1 Design)',
+          'Duration to first milestone: 12 weeks (was 5 weeks)',
+          'Effort estimate for first milestone: 15\u201320 person-weeks',
+          '\u2b50 June 30 = "x10000" inflection point \u2014 validated first slice becomes the scalable foundation'] },
+        { title:'What Beta Is Designed to Validate', para:null, items:[
+          'Is the dynamic canvas paradigm adopted by solo outpatient providers?',
+          'Does AI-assisted note generation save meaningful clinical documentation time?',
+          'Can the end-to-end encounter loop close reliably?',
+          'Is the AI-native foundation scalable beyond the first slice?',
+          'Does the JTBD-organized build sequence deliver signal at each tier?'] }
+      ]
+    };
   })()
 };
 
@@ -1866,14 +2007,14 @@ document.addEventListener('keydown', (e) => {
 
 // ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
 // ══════════════════════════════════════════════════════
-const validTabs = ['jay','cait','rich','syd'];
-let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)' };
-let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'syd';
+const validTabs = ['jay','cait','rich','syd','mvp'];
+let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:'Road To MVP' };
+let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mvp';
 
 // ── STORAGE LAYER ──────────────────────────────────
 // To upgrade to Supabase: set these two values and add the Supabase JS CDN
-const SUPABASE_URL = '';  // e.g. 'https://xyz.supabase.co'
-const SUPABASE_KEY = '';  // anon/public key
+const SUPABASE_URL = 'https://hstlcfhqylnbhxzomhnb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdGxjZmhxeWxuYmh4em9taG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDI3ODQsImV4cCI6MjA5MDQ3ODc4NH0.g7MZskJSa3sZNfl259kq_oMkkF2RxU1_6uUTLdlcGW4';
 let _supabase = null;
 
 function storageKey() { return 'gantt-state-' + activeTab; }

@@ -357,11 +357,29 @@ body {
 .row-stub {
   width: var(--lw);
   flex-shrink: 0;
-  padding: 4px 14px;
+  padding: 4px 6px 4px 0;
   border-right: 1px solid var(--brd);
   display: flex;
   align-items: center;
 }
+.row-grip {
+  width: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--brd);
+  font-size: 11px;
+  letter-spacing: -1px;
+  user-select: none;
+  transition: color .12s;
+}
+.row-grip:hover { color: var(--txt-m); }
+.row-grip:active { cursor: grabbing; }
+.c-row.dragging { opacity: .4; }
+.c-row.drag-over-top { box-shadow: inset 0 2px 0 var(--g); }
+.c-row.drag-over-bot { box-shadow: inset 0 -2px 0 var(--g); }
 .row-name {
   font-size: 12.5px;
   font-weight: 600;
@@ -2016,7 +2034,8 @@ function renderChart(tabKey) {
         barsHTML += `<div class="bar" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">
           <span class="bar-txt"${txtStyle}>${displayTxt}</span>${badge}<div class="bar-tip">${bar.tip}</div><div class="brh"></div></div>`;
       });
-      rowEl.innerHTML = `<div class="row-stub"><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div><button class="row-delete" data-gi="${gi}" data-ri="${ri}" title="Delete row">&times;</button></div><div class="row-track">${barsHTML}</div>`;
+      rowEl.dataset.gi = gi; rowEl.dataset.ri = ri;
+      rowEl.innerHTML = `<div class="row-stub"><div class="row-grip" data-gi="${gi}" data-ri="${ri}">⠿</div><div><div class="row-name">${row.name}</div>${row.sub?`<div class="row-sub">${row.sub}</div>`:''}</div><button class="row-delete" data-gi="${gi}" data-ri="${ri}" title="Delete row">&times;</button></div><div class="row-track">${barsHTML}</div>`;
       body.appendChild(rowEl);
     });
 
@@ -2122,6 +2141,61 @@ function renderChart(tabKey) {
   });
   document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(el => {
     el.addEventListener('focusout', () => setTimeout(schedSave, 50));
+  });
+
+  // Row drag-and-drop reordering within swimlanes
+  document.querySelectorAll('.row-grip').forEach(grip => {
+    grip.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const srcGi = +grip.dataset.gi, srcRi = +grip.dataset.ri;
+      const srcRow = grip.closest('.c-row');
+      srcRow.classList.add('dragging');
+      // Collect all rows in same swimlane
+      const allRows = [...document.querySelectorAll('.c-row')].filter(r => +r.dataset.gi === srcGi);
+      let dropRi = srcRi;
+
+      function onMove(ev) {
+        allRows.forEach(r => { r.classList.remove('drag-over-top','drag-over-bot'); });
+        for (const r of allRows) {
+          if (r === srcRow) continue;
+          const rect = r.getBoundingClientRect();
+          const mid = rect.top + rect.height / 2;
+          if (ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+            const ri = +r.dataset.ri;
+            if (ev.clientY < mid) {
+              r.classList.add('drag-over-top');
+              dropRi = ri;
+            } else {
+              r.classList.add('drag-over-bot');
+              dropRi = ri + 1;
+            }
+            break;
+          }
+        }
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        srcRow.classList.remove('dragging');
+        allRows.forEach(r => { r.classList.remove('drag-over-top','drag-over-bot'); });
+        if (dropRi !== srcRi && dropRi !== srcRi + 1) {
+          pushUndo();
+          const group = currentGroups[srcGi];
+          const [moved] = group.rows.splice(srcRi, 1);
+          const insertAt = dropRi > srcRi ? dropRi - 1 : dropRi;
+          group.rows.splice(insertAt, 0, moved);
+          renderChart(activeTab);
+          renderHeader(activeTab);
+          renderFootnotes(activeTab);
+          schedSave();
+        }
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
   });
 }
 

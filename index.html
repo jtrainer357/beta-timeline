@@ -2557,7 +2557,8 @@ async function doSave() {
 }
 
 async function pollForChanges() {
-  // Don't re-render while user is actively editing
+  // Don't re-render while user is actively editing or a save is pending
+  if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
   const state = await loadState();
   if (!state) return;

@@ -1958,6 +1958,7 @@ function addGroup() {
 
 function addRow(gi) {
   pushUndo();
+  const group = currentGroups[gi];
   const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
   const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 14);
   const newRow = {

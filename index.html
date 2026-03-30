@@ -486,6 +486,7 @@ body {
   display: flex;
   align-items: center;
   padding: 0 14px;
+  position: relative;
 }
 .ms-track { flex: 1; position: relative; }
 
@@ -519,6 +520,28 @@ body {
   white-space: nowrap;
   font-family: 'IBM Plex Mono', monospace;
 }
+.ms-delete {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  border: none;
+  background: var(--red-bg);
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  z-index: 2;
+}
+.ms-delete:hover { background: var(--red); color: white; }
+.milestone:hover .ms-delete { display: flex; }
 
 /* ── FOOTNOTES ────────────────────────────── */
 .footnotes {
@@ -1844,6 +1867,39 @@ function deleteGroup(gi) {
   schedSave();
 }
 
+function deleteMilestone(mi) {
+  pushUndo();
+  currentMilestones.splice(mi, 1);
+  // Adjust d90/beta milestone indices
+  if (currentD90MsIndex != null) {
+    if (mi === currentD90MsIndex) currentD90MsIndex = null;
+    else if (mi < currentD90MsIndex) currentD90MsIndex--;
+  }
+  if (mi === currentBetaMsIndex) currentBetaMsIndex = -1;
+  else if (mi < currentBetaMsIndex) currentBetaMsIndex--;
+  TABS[activeTab].d90MsIndex = currentD90MsIndex;
+  TABS[activeTab].betaMsIndex = currentBetaMsIndex;
+  renderChart(activeTab);
+  renderHeader(activeTab);
+  renderFootnotes(activeTab);
+  schedSave();
+}
+
+function addMilestone() {
+  pushUndo();
+  const newDate = new Date(TODAY);
+  newDate.setDate(newDate.getDate() + 14);
+  currentMilestones.push({
+    date: fmtDate(newDate),
+    name: 'NEW MILESTONE',
+    sub: fmtShort(newDate)
+  });
+  renderChart(activeTab);
+  renderHeader(activeTab);
+  renderFootnotes(activeTab);
+  schedSave();
+}
+
 function addGroup() {
   pushUndo();
   const startDate = new Date(TODAY); startDate.setDate(startDate.getDate() + 1);
@@ -1941,15 +1997,17 @@ function renderChart(tabKey) {
   // Milestone row
   const msRow = document.createElement('div');
   msRow.className = 'ms-row';
-  msRow.innerHTML = `<div class="ms-stub"><div><div class="row-name" style="font-size:12px;">Milestones</div></div></div><div class="ms-track" id="ms-track"></div>`;
+  msRow.innerHTML = `<div class="ms-stub"><div><div class="row-name" style="font-size:12px;">Milestones</div></div><button class="add-row-btn" id="add-ms-btn" title="Add milestone" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);">+</button></div><div class="ms-track" id="ms-track"></div>`;
   body.appendChild(msRow);
+
+  document.getElementById('add-ms-btn').addEventListener('click', addMilestone);
 
   const msTrack = document.getElementById('ms-track');
   currentMilestones.forEach((m, i) => {
     const el = document.createElement('div');
     el.className = 'milestone'; el.id = 'ms-'+i;
     el.style.left = p(dt(m.date));
-    el.innerHTML = `<div class="ms-diamond"></div><div class="ms-name">${m.name}</div><div class="ms-date">${m.sub}</div>`;
+    el.innerHTML = `<div class="ms-delete" data-mi="${i}" title="Delete milestone">&times;</div><div class="ms-diamond"></div><div class="ms-name">${m.name}</div><div class="ms-date">${m.sub}</div>`;
     msTrack.appendChild(el);
   });
 
@@ -2017,6 +2075,9 @@ function renderChart(tabKey) {
     attachBarHandlers(barEl, +barEl.dataset.gi, +barEl.dataset.ri, +barEl.dataset.bi);
   });
   document.querySelectorAll('.milestone').forEach((msEl, i) => attachMilestoneHandlers(msEl, i));
+  document.querySelectorAll('.ms-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); deleteMilestone(+btn.dataset.mi); });
+  });
   document.querySelectorAll('.row-name, .row-sub, .grp-label').forEach(el => {
     el.addEventListener('focusout', () => setTimeout(schedSave, 50));
   });

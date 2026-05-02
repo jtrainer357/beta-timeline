@@ -2692,7 +2692,24 @@ const SUPABASE_URL = 'https://hstlcfhqylnbhxzomhnb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdGxjZmhxeWxuYmh4em9taG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDI3ODQsImV4cCI6MjA5MDQ3ODc4NH0.g7MZskJSa3sZNfl259kq_oMkkF2RxU1_6uUTLdlcGW4';
 let _supabase = null;
 
-function storageKey() { return 'gantt-state-' + activeTab; }
+function storageKey(tab = activeTab) { return 'gantt-state-' + tab; }
+function localDraftKey(key = storageKey()) { return key + '-local-draft'; }
+function savedTime(state) { return Date.parse(state?.saved || '') || 0; }
+
+function loadLocalState(key = storageKey()) {
+  try {
+    const raw = localStorage.getItem(localDraftKey(key)) || localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveLocalState(state, key = storageKey()) {
+  try {
+    localStorage.setItem(localDraftKey(key), JSON.stringify(state));
+    localStorage.setItem(key, JSON.stringify(state));
+    return true;
+  } catch { return false; }
+}
 
 function initSupabase() {
   if (SUPABASE_URL && SUPABASE_KEY && typeof supabase !== 'undefined') {
@@ -2704,42 +2721,67 @@ function initSupabase() {
 }
 
 async function loadState() {
+  const key = storageKey();
+  const localState = loadLocalState(key);
   if (_supabase) {
     try {
-      const { data } = await _supabase.from('gantt_state').select('state').eq('key', storageKey()).single();
-      return data?.state || null;
-    } catch { return null; }
+      const { data, error } = await _supabase.from('gantt_state').select('state').eq('key', key).maybeSingle();
+      if (error) {
+        console.warn('[Gantt] Cloud load failed; using local draft if available.', error);
+        return localState;
+      }
+      const remoteState = data?.state || null;
+      if (remoteState && (!localState || savedTime(remoteState) >= savedTime(localState))) {
+        saveLocalState(remoteState, key);
+        return remoteState;
+      }
+      return localState || remoteState;
+    } catch (err) {
+      console.warn('[Gantt] Cloud load failed; using local draft if available.', err);
+      return localState;
+    }
   }
-  try {
-    const raw = localStorage.getItem(storageKey());
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+  return localState;
 }
 
 function loadStateWithTimeout(ms = 2500) {
+  const localState = loadLocalState();
   return Promise.race([
     loadState(),
-    new Promise(resolve => setTimeout(() => resolve(null), ms))
+    new Promise(resolve => setTimeout(() => resolve(localState), ms))
   ]);
 }
 
 async function saveState(state) {
+  const key = storageKey();
+  const localOk = saveLocalState(state, key);
   if (_supabase) {
     try {
-      await _supabase.from('gantt_state').upsert({ key: storageKey(), state, updated_at: new Date().toISOString() });
-      return true;
-    } catch { return false; }
+      const { error } = await _supabase.from('gantt_state').upsert({ key, state, updated_at: new Date().toISOString() });
+      if (error) {
+        console.error('[Gantt] Cloud save failed; local draft is preserved.', error);
+        return { ok: localOk, local: localOk, cloud: false, error };
+      }
+      return { ok: true, local: localOk, cloud: true };
+    } catch (err) {
+      console.error('[Gantt] Cloud save failed; local draft is preserved.', err);
+      return { ok: localOk, local: localOk, cloud: false, error: err };
+    }
   }
-  try {
-    localStorage.setItem(storageKey(), JSON.stringify(state));
-    return true;
-  } catch { return false; }
+  return { ok: localOk, local: localOk, cloud: false };
 }
 
 const saveInd = document.getElementById('save-ind');
 let _saveTimer = null;
 let _pollTimer = null;
 let _lastSavedHash = '';
+let _needsCloudSync = false;
+let _lastCloudRetry = 0;
+
+function readEditableText(el) {
+  const field = el?.querySelector?.('input, textarea');
+  return field ? field.value : (el?.textContent || '');
+}
 
 function getState() {
   // Sync any DOM text edits back into currentGroups before saving
@@ -2750,22 +2792,31 @@ function getState() {
       if (rowEls[rowIdx]) {
         const n = rowEls[rowIdx].querySelector('.row-name');
         const s = rowEls[rowIdx].querySelector('.row-sub');
-        if (n) row.name = n.textContent;
-        if (s) row.sub = s.textContent;
+        if (n) row.name = readEditableText(n);
+        if (s) row.sub = readEditableText(s);
       }
       rowIdx++;
     });
   });
   document.querySelectorAll('.grp-label').forEach((el, i) => {
-    if (currentGroups[i]) currentGroups[i].label = el.textContent;
+    if (currentGroups[i]) currentGroups[i].label = readEditableText(el);
+  });
+  document.querySelectorAll('.bar').forEach(barEl => {
+    const input = barEl.querySelector('.bar-txt input');
+    if (!input) return;
+    const bar = currentGroups[+barEl.dataset.gi]?.rows?.[+barEl.dataset.ri]?.bars?.[+barEl.dataset.bi];
+    if (!bar) return;
+    const parts = bar.tip.split('\u00b7');
+    parts[0] = (input.value.trim() || input.value || 'Untitled') + ' ';
+    bar.tip = parts.join('\u00b7');
   });
   currentMilestones.forEach((m, i) => {
     const msEl = document.getElementById('ms-' + i);
     if (msEl) {
       const n = msEl.querySelector('.ms-name');
       const d = msEl.querySelector('.ms-date');
-      if (n) m.name = n.textContent;
-      if (d) m.sub = d.textContent;
+      if (n) m.name = readEditableText(n);
+      if (d) m.sub = readEditableText(d);
     }
   });
   const fnState = [];
@@ -2847,15 +2898,19 @@ function schedSave() {
 }
 
 async function doSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer = null;
   const state = getState();
   const h = hashState(state);
-  if (h===_lastSavedHash) { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind saved'; return; }
-  const ok = await saveState(state);
-  if (ok) {
+  if (h===_lastSavedHash && !_needsCloudSync) { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind saved'; return; }
+  const result = await saveState(state);
+  if (result.ok) {
     _lastSavedHash = h;
     const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    saveInd.textContent = '\u2713 Saved '+t; saveInd.className = 'save-ind saved';
-    setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
+    _needsCloudSync = !!(_supabase && !result.cloud);
+    saveInd.textContent = _needsCloudSync ? '\u26a0 Saved locally' : '\u2713 Saved '+t;
+    saveInd.className = _needsCloudSync ? 'save-ind error' : 'save-ind saved';
+    if (!_needsCloudSync) setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
   } else {
     saveInd.textContent='\u2715 Save failed'; saveInd.className='save-ind error';
   }
@@ -2865,6 +2920,11 @@ async function pollForChanges() {
   // Don't re-render while user is actively editing or a save is pending
   if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+  if (_needsCloudSync && Date.now() - _lastCloudRetry > 30000) {
+    _lastCloudRetry = Date.now();
+    await doSave();
+    if (_needsCloudSync) return;
+  }
   const state = await loadStateWithTimeout();
   if (!state) return;
   const h = hashState(state);
@@ -2878,6 +2938,22 @@ async function pollForChanges() {
 
 let _initialLoadDone = false;
 document.addEventListener('mouseup', () => { if (_initialLoadDone && _saveTimer===null) setTimeout(schedSave, 200); });
+window.addEventListener('beforeunload', () => {
+  if (!_initialLoadDone) return;
+  clearTimeout(_saveTimer);
+  saveLocalState(getState());
+});
+window.addEventListener('pagehide', () => {
+  if (!_initialLoadDone) return;
+  clearTimeout(_saveTimer);
+  saveLocalState(getState());
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && _initialLoadDone) {
+    clearTimeout(_saveTimer);
+    saveLocalState(getState());
+  }
+});
 
 // ══════════════════════════════════════════════════════
 // ── TAB SWITCHING ────────────────────────────────────

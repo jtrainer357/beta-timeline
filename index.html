@@ -841,7 +841,7 @@ body {
 </div>
 
 <div class="top-actions">
-  <button class="undo-btn" id="undo-btn" onclick="doUndo()" title="Undo (Cmd+Z)">&#8617; Undo</button>
+  <button class="undo-btn" id="undo-btn" title="Undo (Cmd+Z)">&#8617; Undo</button>
   <div class="save-ind" id="save-ind">Auto-saved</div>
 </div>
 
@@ -2099,6 +2099,7 @@ function makeEditable(el) {
   el.style.cursor = 'text';
   el.addEventListener('dblclick', (e) => {
     e.stopPropagation();
+    pushUndo();
     const original = el.textContent;
     const inp = document.createElement('input');
     inp.className = 'ii';
@@ -2122,6 +2123,7 @@ function attachBarHandlers(barEl, gi, ri, bi) {
 
   barEl.querySelector('.brh').addEventListener('mousedown', (e) => {
     e.preventDefault(); e.stopPropagation();
+    pushUndo();
     const trackEl = barEl.parentElement;
     const tw = trackEl.getBoundingClientRect().width;
     const startX = e.clientX;
@@ -2159,7 +2161,7 @@ function attachBarHandlers(barEl, gi, ri, bi) {
     let active = false;
     function onMove(ev) {
       if (!active && Math.abs(ev.clientX-startX)<4) return;
-      if (!active) { active=true; _isDraggingTimelineItem = true; barEl.classList.add('dragging'); }
+      if (!active) { pushUndo(); active=true; _isDraggingTimelineItem = true; barEl.classList.add('dragging'); }
       const rawLeft = startL+(ev.clientX-startX)/tw*100;
       const newLeft = Math.max(0, Math.min(100 - startW, snapPctToDay(rawLeft)));
       barEl.style.left = newLeft.toFixed(3)+'%';
@@ -2183,6 +2185,7 @@ function attachBarHandlers(barEl, gi, ri, bi) {
 
   barEl.addEventListener('dblclick', (e) => {
     e.stopPropagation(); e.preventDefault();
+    pushUndo();
     const txtEl = barEl.querySelector('.bar-txt');
     const original = txtEl.textContent;
     const inp = document.createElement('input');
@@ -2217,6 +2220,7 @@ function attachMilestoneHandlers(msEl, i) {
   diamond.addEventListener('mousedown', (e) => {
     if (e.button!==0) return;
     e.preventDefault(); e.stopPropagation();
+    pushUndo();
     const trackEl = msEl.parentElement;
     const tw = trackEl.getBoundingClientRect().width;
     const startX = e.clientX, startL = parseFloat(msEl.style.left);
@@ -2255,6 +2259,7 @@ function attachMilestoneHandlers(msEl, i) {
   nameEl.style.cursor = 'text';
   nameEl.addEventListener('dblclick', (e) => {
     e.stopPropagation();
+    pushUndo();
     const original = nameEl.textContent;
     const inp = document.createElement('input');
     inp.className = 'ii';
@@ -2602,6 +2607,7 @@ function attachFootnoteHandlers() {
     el.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       if (el.querySelector('input')) return;
+      pushUndo();
       const original = el.textContent;
       const inp = document.createElement('input');
       inp.className = 'ii';
@@ -2623,6 +2629,7 @@ function attachFootnoteHandlers() {
     el.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       if (el.querySelector('input, textarea')) return;
+      pushUndo();
       const original = el.innerHTML;
       if (el.tagName === 'P') {
         const ta = document.createElement('textarea');
@@ -2655,6 +2662,7 @@ function attachFootnoteHandlers() {
   document.querySelectorAll('.fn-card .li-del').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      pushUndo();
       btn.parentElement.remove();
       schedSave();
     });
@@ -2662,6 +2670,7 @@ function attachFootnoteHandlers() {
 }
 
 function addBullet(cardId) {
+  pushUndo();
   const card = document.getElementById(cardId);
   let ul = card.querySelector('ul');
   if (!ul) { ul = document.createElement('ul'); ul.style.paddingLeft='14px'; card.querySelector('h4').after(ul); }
@@ -2708,11 +2717,13 @@ let _isUndoing = false;
 function pushUndo() {
   if (_isUndoing) return;
   const state = getState();
-  _undoStack.push(JSON.stringify(state));
+  const serialized = JSON.stringify(state);
+  if (_undoStack[_undoStack.length - 1] === serialized) return;
+  _undoStack.push(serialized);
   if (_undoStack.length > MAX_UNDO) _undoStack.shift();
 }
 
-function doUndo() {
+function performUndo() {
   if (_undoStack.length === 0) return;
   _isUndoing = true;
   const prev = JSON.parse(_undoStack.pop());
@@ -2721,11 +2732,23 @@ function doUndo() {
   _isUndoing = false;
 }
 
+function doUndo() {
+  if (_undoStack.length === 0) return;
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) active.blur();
+  requestAnimationFrame(performUndo);
+}
+
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
     e.preventDefault();
     doUndo();
   }
+});
+
+document.getElementById('undo-btn').addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  doUndo();
 });
 
 // ── AUTO-SAVE PERSISTENCE ────────────────────────────
@@ -2958,13 +2981,9 @@ function applyState(state) {
   _lastSavedHash = hashState(state);
 }
 
-let _undoTimer = null;
 function schedSave() {
   if (!_initialLoadDone) return;
   clearTimeout(_saveTimer);
-  if (!_undoTimer) {
-    _undoTimer = setTimeout(() => { pushUndo(); _undoTimer = null; }, 50);
-  }
   saveLocalDraftNow();
   saveInd.textContent = '\u25cf Saving\u2026';
   saveInd.className = 'save-ind saving';
@@ -3084,6 +3103,7 @@ document.querySelectorAll('.tab').forEach(tabEl => {
   tabEl.addEventListener('dblclick', (e) => {
     e.stopPropagation();
     e.preventDefault();
+    pushUndo();
     const tabKey = tabEl.dataset.tab;
     const original = tabEl.textContent;
     const inp = document.createElement('input');

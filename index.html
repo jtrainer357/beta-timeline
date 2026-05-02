@@ -831,6 +831,8 @@ body {
 
 <div class="tab-bar">
   <div class="tab active" data-tab="mvp" onclick="switchTab('mvp')">Road To MVP</div>
+  <div class="tab" data-tab="cloudflare" onclick="switchTab('cloudflare')">Cloudflare</div>
+  <div class="tab" data-tab="gke" onclick="switchTab('gke')">GKE</div>
   <div style="flex:1;"></div>
   <span class="archived-label">ARCHIVED</span>
   <div class="tab archived" data-tab="syd" onclick="switchTab('syd')">Beta (Revised)</div>
@@ -903,6 +905,29 @@ function setZoom(z) {
   currentZoom = z;
   scrollInner.style.minWidth = (100 * z) + '%';
   document.getElementById('zoom-level').textContent = Math.round(z * 100) + '%';
+}
+
+function frameDefaultTimelineWindow() {
+  const leadDays = 7;
+  const tailDays = 10;
+  const from = new Date(TODAY);
+  from.setDate(from.getDate() - leadDays);
+  const to = new Date(D90);
+  to.setDate(to.getDate() + tailDays);
+
+  const windowDays = Math.max(1, (to - from) / 864e5);
+  const stubWidth = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lw')) || 0;
+  const viewportWidth = Math.max(1, scrollWrapper.clientWidth);
+  const visibleChartWidth = Math.max(1, viewportWidth - stubWidth);
+  const targetChartWidth = visibleChartWidth * (TOTAL / windowDays);
+  const targetZoom = (stubWidth + targetChartWidth) / viewportWidth;
+
+  setZoom(targetZoom);
+  requestAnimationFrame(() => {
+    const chartWidth = Math.max(1, scrollInner.scrollWidth - stubWidth);
+    const fromPct = Math.max(0, Math.min(1, (from - START) / 864e5 / TOTAL));
+    scrollWrapper.scrollLeft = Math.max(0, (chartWidth * fromPct) - 12);
+  });
 }
 
 scrollWrapper.addEventListener('wheel', (e) => {
@@ -1695,6 +1720,298 @@ const TABS = {
         */
       ]
     };
+  })(),
+  cloudflare: (() => {
+    const C = {
+      build: '#004952',
+      job4: '#3D8F8A',
+      design: '#8CA7A2',
+      pm: '#E8875F',
+      ready: '#3A7CA5',
+      risk: '#D94040',
+      tbd: '#FF8D6E',
+    };
+    const CONF = {
+      source: { label: 'SOURCE-CHECKED', bg: '#004952' },
+      tbd: { label: 'TBD OWNER', bg: '#CC6F4E' },
+      gate: { label: 'GATE', bg: '#6D28D9' },
+      risk: { label: 'RISK', bg: '#A52D2D' },
+      estimate: { label: 'PLANNING', bg: '#3A7CA5' },
+    };
+    return {
+      groups: [
+        { label: 'Cloudflare Track — EJ Build', rows: [
+          { name: 'Job 1 reminders/cancellations', sub: 'Owner: EJ · Cait supplies templates',
+            bars: [{ s:'2026-05-04', e:'2026-05-22', color:C.build, conf:CONF.source,
+              tip:'Job 1 reminders/cancellations · EJ build, Cait templates · Notification reminders, cancellation variants, canonical auditable appointment-status history.' }] },
+          { name: 'Sully integration into Nitro', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-04', e:'2026-05-15', color:C.build, conf:CONF.source,
+              tip:'Sully integration · EJ · End-to-end integration replacing manual transcript feed.' }] },
+          { name: 'GKE Intelligence Service integration', sub: 'Owners: EJ + Rich',
+            bars: [{ s:'2026-05-04', e:'2026-05-15', color:C.build, conf:CONF.source,
+              tip:'GKE Intelligence integration · EJ integrates, Rich owns service · Consume Rich-owned GKE Intelligence Service from Nitro.' }] },
+          { name: 'WebRTC / Cloudflare pressure test', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-04', e:'2026-05-08', color:C.risk, conf:CONF.gate,
+              tip:'WebRTC pressure test · EJ · Use Cloudflare in standups to test usability, transcript quality, stability.' }] },
+          { name: 'Cloudflare or Whereby implementation', sub: 'Owner: EJ · depends on 5/8 decision',
+            bars: [{ s:'2026-05-11', e:'2026-05-15', color:C.build, conf:CONF.source,
+              tip:'Cloudflare/Whereby implementation · EJ · Continue Cloudflare if go; otherwise wire Whereby fallback.' }] },
+          { name: 'Job 5 foundations/entity alignment', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-12', e:'2026-05-15', color:C.build, conf:CONF.source,
+              tip:'Job 5 entity alignment · EJ · Validate existing Tebra entity model fit for Nitro.' }] },
+          { name: 'Job 3 extraction + CPT chain', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:C.build, conf:CONF.source,
+              tip:'Job 3 extraction + CPT · EJ · Sully integration to extraction to CPT clinical documentation chain.' }] },
+          { name: 'Job 5 Patient 360 + highlights', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:C.build, conf:CONF.source,
+              tip:'Job 5 P360/highlights · EJ · Patient 360, notifications, Last Session Highlights, Patient Summary panel.' }] },
+          { name: 'Job 2 Home/Prep', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-25', e:'2026-05-29', color:C.build, conf:CONF.source,
+              tip:'Job 2 Home/Prep · EJ · Build smaller surface, mostly as Job 5 consumer.' }] },
+          { name: 'Landing page', sub: 'Owner: EJ · supporting owner TBD',
+            bars: [{ s:'2026-05-25', e:'2026-05-29', color:C.tbd, conf:CONF.tbd,
+              tip:'Landing page · EJ + TBD · Basic public-accessible product entry page for launch.' }] },
+          { name: 'Patient-only global search', sub: 'Owner: EJ',
+            bars: [{ s:'2026-05-25', e:'2026-05-29', color:C.build, conf:CONF.source,
+              tip:'Patient-only search · EJ · MVP search at top of canvas; full ask-anything canvas deferred.' }] },
+          { name: 'Job 6 trial flow / Decide to Buy', sub: 'Owners: EJ + Jay + Catarina · post-go/no-go',
+            bars: [{ s:'2026-06-01', e:'2026-06-12', color:C.build, conf:CONF.source,
+              tip:'Job 6 trial flow · EJ, Jay, Catarina · Synthetic patient, paywall scaffolding, Magic Page surfaces after org go/no-go.' }] },
+        ]},
+        { label: 'Cloudflare Track — Job 4 / Payments', rows: [
+          { name: 'Design system tidy-up', sub: 'Owner: Cameron',
+            bars: [{ s:'2026-05-04', e:'2026-05-06', color:C.job4, conf:CONF.source,
+              tip:'Design system tidy-up · Cameron · Make front-end/design system reusable for subsequent work.' }] },
+          { name: 'Stripe Connect kickoff + build', sub: 'Owner: Cameron',
+            bars: [{ s:'2026-05-06', e:'2026-05-22', color:C.job4, conf:CONF.source,
+              tip:'Stripe Connect · Cameron · Kickoff in Week 1, continue through Week 3.' }] },
+          { name: 'Ledger scoping/build', sub: 'Owners: Cameron + Stephen TBD',
+            bars: [{ s:'2026-05-11', e:'2026-05-29', color:C.tbd, conf:CONF.tbd,
+              tip:'Ledger work · Cameron + Stephen TBD · Ledger scoping, build, statements, payment reconciliation.' }] },
+          { name: 'Job 4 polish + reconciliation tests', sub: 'Owners: Cameron + Stephen TBD',
+            bars: [{ s:'2026-06-01', e:'2026-06-12', color:C.job4, conf:CONF.source,
+              tip:'Job 4 polish/tests · Cameron + Stephen TBD · Polish and ledger reconciliation tests; Job 4 done by Week 6.' }] },
+        ]},
+        { label: 'Cloudflare Track — Design', rows: [
+          { name: 'UI feedback + front-end baseline', sub: 'Owners: Jay + Catarina + Cameron',
+            bars: [{ s:'2026-05-04', e:'2026-05-08', color:C.design, conf:CONF.source,
+              tip:'Design system/front-end final · Jay, Catarina, Cameron · UI feedback compiled, front-end/design system baseline final by 5/8.' }] },
+          { name: 'Error/zero states + synthetic patient + Job 6 designs', sub: 'Owners: Jay + Catarina',
+            bars: [{ s:'2026-05-11', e:'2026-05-15', color:C.design, conf:CONF.source,
+              tip:'Design backlog cleared · Jay + Catarina · Error states, zero states, synthetic patient, Decide-to-Buy designs by 5/15.' }] },
+          { name: 'Final refinements + Job 6 design support', sub: 'Owners: Jay + Catarina',
+            bars: [{ s:'2026-05-18', e:'2026-06-12', color:C.design, conf:CONF.source,
+              tip:'Design refinement/support · Jay + Catarina · Final build-feedback refinements and Job 6 design support.' }] },
+          { name: 'UX QA across full product', sub: 'Owners: Jay + Catarina',
+            bars: [{ s:'2026-06-15', e:'2026-06-20', color:C.design, conf:CONF.source,
+              tip:'UX QA · Jay + Catarina · Full-product UX QA and final UI tightening.' }] },
+        ]},
+        { label: 'Cloudflare Track — PM / Compliance / Evals', rows: [
+          { name: 'Notification templates', sub: 'Owner: Cait',
+            bars: [{ s:'2026-05-04', e:'2026-05-08', color:C.pm, conf:CONF.source,
+              tip:'Notification templates · Cait · Email/SMS language for reminders and cancellation variants.' }] },
+          { name: 'Ye checklist + Linear compliance project', sub: 'Owners: Cait + EJ',
+            bars: [{ s:'2026-05-04', e:'2026-05-15', color:C.pm, conf:CONF.source,
+              tip:'Architecture/compliance tracking · Cait + EJ · Ye checklist, PRD language fix, PHI/LLM/security line items in Linear.' }] },
+          { name: 'Cloudflare BAA confirmation if go', sub: 'Owner: Cait + Cloudflare',
+            bars: [{ s:'2026-05-09', e:'2026-05-15', color:C.pm, conf:CONF.source,
+              tip:'Cloudflare BAA · Cait + Cloudflare · Confirm existing BAA coverage or addendum if WebRTC is go.' }] },
+          { name: 'Customer Engineer conversation', sub: 'Owner: Cait',
+            bars: [{ s:'2026-05-11', e:'2026-05-15', color:C.risk, conf:CONF.risk,
+              tip:'Customer Engineer · Cait · Formalize role and surface to leadership; currently not hired/socialized.' }] },
+          { name: 'Architecture/go-no-go package', sub: 'Owners: Cait + EJ',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:C.pm, conf:CONF.source,
+              tip:'Org go/no-go package · Cait + EJ · Architecture evidence pack, security/compliance summary, approver readout.' }] },
+          { name: 'Eval framework + runs', sub: 'Owner: Cait + Eval Owner TBD',
+            bars: [{ s:'2026-06-01', e:'2026-06-12', color:C.tbd, conf:CONF.tbd,
+              tip:'Eval gate work · Cait + Eval Owner TBD · Author and run EVAL-SN-1, EVAL-DE-1, EVAL-CPT-1, EVAL-CS-1.' }] },
+          { name: 'Compliance final + CS readiness', sub: 'Owner: Cait + TBD',
+            bars: [{ s:'2026-06-15', e:'2026-06-26', color:C.pm, conf:CONF.source,
+              tip:'Compliance/CS readiness · Cait + TBD · BAA confirmations, CS activation, launch communications.' }] },
+        ]},
+        { label: 'Cloudflare Track — Hardening + Launch', rows: [
+          { name: 'Cross-job integration testing', sub: 'Owners: EJ + Cameron',
+            bars: [{ s:'2026-05-25', e:'2026-06-12', color:C.ready, conf:CONF.source,
+              tip:'Cross-job integration testing · EJ + Cameron · Begin before Week 7; full E2E flows in Weeks 5-6.' }] },
+          { name: 'Bug bash + support tooling decisions', sub: 'Owners: EJ + Cameron + TBD',
+            bars: [{ s:'2026-06-15', e:'2026-06-20', color:C.tbd, conf:CONF.tbd,
+              tip:'Bug bash/support tooling · EJ + Cameron + TBD · Bug bash and support tooling decisions.' }] },
+          { name: 'Final QA / production readiness', sub: 'Owners: EJ + Cameron',
+            bars: [{ s:'2026-06-22', e:'2026-06-26', color:C.ready, conf:CONF.source,
+              tip:'Final QA/production readiness · EJ + Cameron · Final QA leading to code freeze.' }] },
+          { name: 'Launch coverage', sub: 'Owners: Cameron + Cait · EJ standby TBD',
+            bars: [{ s:'2026-06-29', e:'2026-06-30', color:C.risk, conf:CONF.risk,
+              tip:'Launch coverage · Cameron + Cait, EJ standby TBD · EJ out 6/29-7/3; incident commander/standby plan needed.' }] },
+        ]},
+      ],
+      milestones: [
+        { date:'2026-05-08', name:'WebRTC Go/No-Go', sub:'May 8' },
+        { date:'2026-05-15', name:'Foundation Locked', sub:'May 15' },
+        { date:'2026-06-01', name:'ORG Go/No-Go', sub:'Jun 1' },
+        { date:'2026-06-12', name:'Eval Gate', sub:'Jun 12' },
+        { date:'2026-06-26', name:'Code Freeze', sub:'Jun 26' },
+        { date:'2026-06-30', name:'Launch', sub:'Jun 30' },
+      ],
+      betaDate: '2026-06-30',
+      betaMsIndex: 5,
+      d90Date: '2026-06-30',
+      d90MsIndex: 5,
+      msLineColors: { 0: '#6D28D9', 2: '#D94040', 3: '#D94040', 4: '#FF8D6E', 5: '#D94040' },
+      header: {
+        title: 'Cloudflare Track — <strong>June 30 Launch Plan</strong>',
+        sub: 'Source-checked from May 1 Cloudflare alignment plan · Cloudflare/Nitro track',
+        pills: ['Start: May 4, 2026', 'ORG Go/No-Go: June 1, 2026', 'Launch: June 30, 2026']
+      },
+      blocker: null,
+      footnotes: [
+        { title:'Source Discipline', para:'Cloudflare dates are grounded in the written May 1 sprint plan. Items marked TBD reflect owner gaps or pending allocation from that plan.', items:null },
+        { title:'High-Risk Open Owners', para:null, items:[
+          'AI eval owner / baseline benchmarking owner is still TBD',
+          'Stephen allocation to Job 4 ledger is still pending Ronen/Cait confirmation',
+          'Customer Engineer role/hire is not yet socialized with leadership',
+          'Launch-week incident commander and EJ standby posture need confirmation'
+        ]}
+      ]
+    };
+  })(),
+  gke: (() => {
+    const G = {
+      service: '#004952',
+      data: '#3D8F8A',
+      intel: '#3A7CA5',
+      integration: '#6D28D9',
+      ready: '#8CA7A2',
+      tbd: '#FF8D6E',
+      risk: '#D94040',
+    };
+    const CONF = {
+      source: { label: 'SOURCE-CHECKED', bg: '#004952' },
+      planning: { label: 'PLANNING', bg: '#3A7CA5' },
+      tbd: { label: 'TBD OWNER', bg: '#CC6F4E' },
+      gate: { label: 'GATE', bg: '#6D28D9' },
+      risk: { label: 'RISK', bg: '#A52D2D' },
+    };
+    return {
+      groups: [
+        { label: 'GKE Track — Core Services (Seth)', rows: [
+          { name: 'Auth direction / Descope path', sub: 'Owner: Seth + TBD',
+            bars: [{ s:'2026-05-04', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+              tip:'Auth direction · Seth + TBD · Decide/implement Descope path; Auth0 appears to be moving out.' }] },
+          { name: 'Care session / Whereby baseline', sub: 'Owner: Seth',
+            bars: [{ s:'2026-05-04', e:'2026-05-15', color:G.service, conf:CONF.source,
+              tip:'Care session baseline · Seth · Proceed with Whereby while Cloudflare/WebRTC decision is pending.' }] },
+          { name: 'SMS path / Infobip investigation', sub: 'Owner: Seth',
+            bars: [{ s:'2026-05-05', e:'2026-05-15', color:G.service, conf:CONF.source,
+              tip:'SMS path · Seth · Investigate Infobip after signal that Tebra is moving away from Twilio.' }] },
+          { name: 'Email path', sub: 'Owner: Seth + TBD',
+            bars: [{ s:'2026-05-05', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+              tip:'Email path · Seth + TBD · Likely existing Tebra email mechanism; final path not confirmed in audio.' }] },
+          { name: 'Sully integration approach', sub: 'Owners: Seth + EJ + TBD',
+            bars: [{ s:'2026-05-07', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+              tip:'Sully integration approach · Seth + EJ + TBD · Avoid duplicate Sully investigation; align output path with Cloudflare/Whereby decision.' }] },
+          { name: 'Notification service scoping', sub: 'Owner: Seth + TBD',
+            bars: [{ s:'2026-05-09', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+              tip:'Notification service scoping · Seth + TBD · Provider-facing notification when something happens while away.' }] },
+          { name: 'Note service scoping', sub: 'Owners: Seth + Rich + TBD',
+            bars: [{ s:'2026-05-09', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+              tip:'Note service scoping · Seth + Rich + TBD · Store signed notes; separate from existing module/service assumptions.' }] },
+          { name: 'Auth implementation', sub: 'Owner: Seth + TBD',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
+              tip:'Auth implementation · Seth + TBD · Planning hypothesis after direction is confirmed.' }] },
+          { name: 'Core service completion', sub: 'Owners: Seth + Sarvesh + TBD',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.service, conf:CONF.planning,
+              tip:'Core service completion · Seth + Sarvesh + TBD · Complete needed GKE Job 3 services after schema review.' }] },
+          { name: 'Communication implementation', sub: 'Owner: Seth + TBD',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
+              tip:'Communication implementation · Seth + TBD · SMS/email implementation after Week 1-2 path clarification.' }] },
+          { name: 'Note + notification implementation', sub: 'Owners: Seth + Rich + TBD',
+            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
+              tip:'Note/notification implementation · Seth + Rich + TBD · Planning hypothesis based on scoped services.' }] },
+        ]},
+        { label: 'GKE Track — Data / Clinical Models (Sarvesh + Vince)', rows: [
+          { name: 'Clinical entity/model review', sub: 'Owner: Sarvesh',
+            bars: [{ s:'2026-05-04', e:'2026-05-12', color:G.data, conf:CONF.source,
+              tip:'Clinical model review · Sarvesh · Review clinical entities, patient allergies, relationships, schema fit.' }] },
+          { name: 'Clinical schemas build/deploy', sub: 'Owners: Seth + Sarvesh',
+            bars: [{ s:'2026-05-13', e:'2026-05-16', color:G.data, conf:CONF.source,
+              tip:'Clinical schemas build/deploy · Seth + Sarvesh · Audio expectation: once schemas are good, likely one to two days.' }] },
+          { name: 'Terminology/reference data MVP', sub: 'Owners: Vince + Sarvesh + TBD',
+            bars: [{ s:'2026-05-09', e:'2026-05-16', color:G.tbd, conf:CONF.tbd,
+              tip:'Terminology/reference MVP · Vince + Sarvesh + TBD · Short ICD/CPT/SNOMED/allergy reference data, not full lookup.' }] },
+          { name: 'Test data + DB operational access', sub: 'Owner: Sarvesh',
+            bars: [{ s:'2026-05-20', e:'2026-05-29', color:G.data, conf:CONF.planning,
+              tip:'Test data + DB ops · Sarvesh · Generate data and make sure team has database access/operational paths.' }] },
+        ]},
+        { label: 'GKE Track — Intelligence Layer (Rich)', rows: [
+          { name: 'Intelligence eventing/SSE validation', sub: 'Owners: Rich + EJ',
+            bars: [{ s:'2026-05-04', e:'2026-05-08', color:G.intel, conf:CONF.source,
+              tip:'Intelligence eventing/SSE · Rich + EJ · Validate workflow events/status connection for front-end visibility.' }] },
+          { name: 'Clinical summary intelligence layer', sub: 'Owner: Rich',
+            bars: [{ s:'2026-05-18', e:'2026-06-05', color:G.intel, conf:CONF.planning,
+              tip:'Clinical summary · Rich · Build patient summary from up to three notes plus possible patient-record context.' }] },
+          { name: 'Temporal/checkpointing/model security', sub: 'Owner: Rich',
+            bars: [{ s:'2026-05-18', e:'2026-06-12', color:G.intel, conf:CONF.planning,
+              tip:'Temporal/checkpointing/security · Rich · Finish workflow integration, checkpointing, model wiring, security greenlight.' }] },
+          { name: 'Extraction integration validation', sub: 'Owner: Rich + TBD',
+            bars: [{ s:'2026-06-02', e:'2026-06-10', color:G.intel, conf:CONF.planning,
+              tip:'Extraction validation · Rich + TBD · Extraction is described as done; validate end-to-end through Job 3 flow.' }] },
+        ]},
+        { label: 'GKE Track — Next.js / BFF Integration', rows: [
+          { name: 'Next.js/BFF to GKE integration plan', sub: 'Owners: EJ + Vince',
+            bars: [{ s:'2026-05-06', e:'2026-05-15', color:G.integration, conf:CONF.source,
+              tip:'Next.js/BFF GKE plan · EJ + Vince · Do not duplicate UI; define GKE path behind existing Next.js/BFF.' }] },
+          { name: 'GKE Job 3 integration test defined', sub: 'Owners: EJ + Vince + TBD',
+            bars: [{ s:'2026-05-15', e:'2026-05-16', color:G.tbd, conf:CONF.tbd,
+              tip:'GKE Job 3 test defined · EJ + Vince + TBD · Define proof that current UI/BFF can run Job 3 against GKE.' }] },
+          { name: 'Next.js/BFF GKE path implementation', sub: 'Owners: EJ + Vince + TBD',
+            bars: [{ s:'2026-05-25', e:'2026-06-05', color:G.integration, conf:CONF.planning,
+              tip:'Next.js/BFF GKE path · EJ + Vince + TBD · Implement route/cutover path behind existing UI.' }] },
+          { name: 'GKE Job 3 E2E proof through existing UI', sub: 'Owners: EJ + Vince + Seth + Rich',
+            bars: [{ s:'2026-06-02', e:'2026-06-10', color:G.integration, conf:CONF.planning,
+              tip:'GKE Job 3 E2E proof · EJ + Vince + Seth + Rich · Prove login/patient/note/extraction flow through existing UI.' }] },
+          { name: 'GKE Job 3 hardening', sub: 'Owner: GKE Team + TBD',
+            bars: [{ s:'2026-06-10', e:'2026-06-20', color:G.ready, conf:CONF.planning,
+              tip:'GKE Job 3 hardening · GKE Team + TBD · Harden after E2E proof; audio gave workstreams but no clean week-by-week schedule.' }] },
+        ]},
+        { label: 'GKE Track — Capacity / Launch Readiness', rows: [
+          { name: 'Capacity rule after Job 3', sub: 'Owners: Katerina + Kyle + Dan',
+            bars: [{ s:'2026-06-10', e:'2026-06-14', color:G.risk, conf:CONF.risk,
+              tip:'Capacity rule · Katerina + Kyle + Dan · Decide whether GKE continues deeper scope or helps launch-readiness gaps after Job 3.' }] },
+          { name: 'Shared launch-readiness support if needed', sub: 'Owner: GKE Team + TBD',
+            bars: [{ s:'2026-06-15', e:'2026-06-26', color:G.tbd, conf:CONF.tbd,
+              tip:'Shared readiness support · GKE Team + TBD · Support/testing/evals/tools if June 30 readiness needs help.' }] },
+          { name: 'Final GKE validation', sub: 'Owner: GKE Team + TBD',
+            bars: [{ s:'2026-06-22', e:'2026-06-26', color:G.ready, conf:CONF.planning,
+              tip:'Final GKE validation · GKE Team + TBD · Final validation before June 30 commitment.' }] },
+        ]},
+      ],
+      milestones: [
+        { date:'2026-05-12', name:'Clinical Review', sub:'May 12' },
+        { date:'2026-05-15', name:'Integration Test Defined', sub:'May 15' },
+        { date:'2026-06-10', name:'Job 3 E2E Proof', sub:'Jun 10' },
+        { date:'2026-06-14', name:'Capacity Rule', sub:'Jun 14' },
+        { date:'2026-06-30', name:'Job 3 Commitment', sub:'Jun 30' },
+      ],
+      betaDate: '2026-06-30',
+      betaMsIndex: 4,
+      d90Date: '2026-06-30',
+      d90MsIndex: 4,
+      msLineColors: { 1: '#6D28D9', 2: '#FF8D6E', 3: '#D94040', 4: '#D94040' },
+      header: {
+        title: 'GKE Track — <strong>Job 3 Commitment</strong>',
+        sub: 'Source-checked from May 1 GKE iPhone recording · GKE/Intelligence track',
+        pills: ['Start: May 4, 2026', 'Job 3 Target: June 30, 2026', 'Post-Job-3 Capacity: TBD']
+      },
+      blocker: null,
+      footnotes: [
+        { title:'Source Discipline', para:'GKE Week 1-2 tasks are grounded in the recording. Later dates are deliberately marked planning hypotheses because the meeting did not lock a full week-by-week schedule.', items:null },
+        { title:'Open Alignment Question', para:null, items:[
+          'If GKE Job 3 finishes early, does the team continue deeper GKE scope or help Cloudflare/support/testing/eval readiness?',
+          'That direction needs to come to the whole team from Katerina/Kyle/Dan, not as a side-channel clarification.',
+          'The Next.js/BFF integration proof is the critical confidence builder; GKE should not build a duplicate UI.'
+        ]}
+      ]
+    };
   })()
 };
 
@@ -2374,8 +2691,8 @@ document.addEventListener('keydown', (e) => {
 
 // ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
 // ══════════════════════════════════════════════════════
-const validTabs = ['jay','cait','rich','syd','mvp'];
-let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:'Road To MVP' };
+const validTabs = ['jay','cait','rich','syd','mvp','cloudflare','gke'];
+let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:'Road To MVP', cloudflare:'Cloudflare', gke:'GKE' };
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mvp';
 
 // ── STORAGE LAYER ──────────────────────────────────
@@ -2406,6 +2723,13 @@ async function loadState() {
     const raw = localStorage.getItem(storageKey());
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
+}
+
+function loadStateWithTimeout(ms = 2500) {
+  return Promise.race([
+    loadState(),
+    new Promise(resolve => setTimeout(() => resolve(null), ms))
+  ]);
 }
 
 async function saveState(state) {
@@ -2550,11 +2874,12 @@ async function pollForChanges() {
   // Don't re-render while user is actively editing or a save is pending
   if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
-  const state = await loadState();
+  const state = await loadStateWithTimeout();
   if (!state) return;
   const h = hashState(state);
   if (h!==_lastSavedHash) {
     applyState(state);
+    frameDefaultTimelineWindow();
     saveInd.textContent='\u21bb Synced'; saveInd.className='save-ind synced';
     setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 2000);
   }
@@ -2576,9 +2901,11 @@ async function switchTab(tab) {
   renderChart(tab);
   renderHeader(tab);
   renderFootnotes(tab);
+  frameDefaultTimelineWindow();
   saveInd.textContent = '\u25cf Loading\u2026'; saveInd.className = 'save-ind saving';
-  const state = await loadState();
+  const state = await loadStateWithTimeout();
   if (state) applyState(state);
+  frameDefaultTimelineWindow();
   saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
   setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 1500);
 }
@@ -2592,24 +2919,15 @@ renderHeader(activeTab);
 renderFootnotes(activeTab);
 
 initSupabase();
-loadState().then(state => {
+frameDefaultTimelineWindow();
+loadStateWithTimeout().then(state => {
   if (state) {
     applyState(state);
     _lastSavedHash = hashState(state);
   } else {
-    // Default zoom: frame the active timeline (a few weeks before today through just past 90-day)
-    setZoom(2);
-    // Scroll so TODAY is near the left edge
-    setTimeout(() => {
-      const todayPct = (TODAY - START) / 864e5 / TOTAL;
-      const stubWidth = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lw'));
-      const viewable = scrollWrapper.clientWidth - stubWidth;
-      const d90Pct = (D90 - START) / 864e5 / TOTAL;
-      const midPct = (todayPct + d90Pct) / 2;
-      const scrollTarget = (midPct * scrollInner.scrollWidth) - (viewable * 0.5);
-      scrollWrapper.scrollLeft = Math.max(0, scrollTarget);
-    }, 50);
+    _lastSavedHash = hashState(getState());
   }
+  frameDefaultTimelineWindow();
   _initialLoadDone = true;
   if (_supabase) _pollTimer = setInterval(pollForChanges, 5000);
 });

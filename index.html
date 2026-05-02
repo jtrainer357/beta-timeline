@@ -1863,7 +1863,7 @@ const TABS = {
       msLineColors: { 0: '#6D28D9', 2: '#D94040', 3: '#D94040', 4: '#FF8D6E', 5: '#D94040' },
       header: {
         title: 'Cloudflare Track — <strong>June 30 Launch Plan</strong>',
-        sub: 'Source-checked from May 1 Cloudflare alignment plan · Cloudflare/Nitro track',
+        sub: '',
         pills: ['Start: May 4, 2026', 'ORG Go/No-Go: June 1, 2026', 'Launch: June 30, 2026']
       },
       blocker: null,
@@ -1995,7 +1995,7 @@ const TABS = {
       msLineColors: { 1: '#6D28D9', 2: '#FF8D6E', 3: '#D94040', 4: '#D94040' },
       header: {
         title: 'GKE Track — <strong>Job 3 Commitment</strong>',
-        sub: 'Source-checked from May 1 GKE iPhone recording · GKE/Intelligence track',
+        sub: '',
         pills: ['Start: May 4, 2026', 'Job 3 Target: June 30, 2026', 'Post-Job-3 Capacity: TBD']
       },
       blocker: null,
@@ -2516,7 +2516,9 @@ function renderChart(tabKey) {
 function renderHeader(tabKey) {
   const tab = TABS[tabKey];
   document.getElementById('hd-title').innerHTML = tab.header.title;
-  document.getElementById('hd-sub').textContent = tab.header.sub;
+  const subEl = document.getElementById('hd-sub');
+  subEl.textContent = tab.header.sub;
+  subEl.style.display = tab.header.sub ? '' : 'none';
   document.getElementById('hd-pills').innerHTML = tab.header.pills.map(t => `<div class="pill">${t}</div>`).join('');
   const bannerEl = document.getElementById('blocker-banner');
   if (tab.blocker) {

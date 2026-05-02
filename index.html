@@ -950,6 +950,7 @@ function dateFromPct(pct) {
   d.setDate(d.getDate() + days);
   return d;
 }
+function snapPctToDay(pct) { return pctFromDate(dateFromPct(pct)); }
 function fmtDate(d) { return d.toISOString().split('T')[0]; }
 function fmtShort(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
 
@@ -2051,6 +2052,7 @@ let overlay = null;
 let betaLine = null;
 let deltaEl = null;
 let deltaLabel = null;
+let _isDraggingTimelineItem = false;
 
 const TBD_COLOR = '#FF8D6E';
 
@@ -2123,10 +2125,18 @@ function attachBarHandlers(barEl, gi, ri, bi) {
     const trackEl = barEl.parentElement;
     const tw = trackEl.getBoundingClientRect().width;
     const startX = e.clientX;
+    const startL = parseFloat(barEl.style.left);
     const startW = parseFloat(barEl.style.width);
+    const minW = 100 / TOTAL;
+    _isDraggingTimelineItem = true;
     barEl.classList.add('dragging');
-    function onMove(ev) { barEl.style.width = Math.max(0.5, startW + (ev.clientX-startX)/tw*100).toFixed(3)+'%'; }
+    function onMove(ev) {
+      const rawRight = startL + startW + (ev.clientX-startX)/tw*100;
+      const rightPct = Math.max(startL + minW, Math.min(100, snapPctToDay(rawRight)));
+      barEl.style.width = (rightPct - startL).toFixed(3)+'%';
+    }
     function onUp() {
+      _isDraggingTimelineItem = false;
       barEl.classList.remove('dragging');
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
@@ -2149,19 +2159,23 @@ function attachBarHandlers(barEl, gi, ri, bi) {
     let active = false;
     function onMove(ev) {
       if (!active && Math.abs(ev.clientX-startX)<4) return;
-      if (!active) { active=true; barEl.classList.add('dragging'); }
-      barEl.style.left = Math.max(0, startL+(ev.clientX-startX)/tw*100).toFixed(3)+'%';
+      if (!active) { active=true; _isDraggingTimelineItem = true; barEl.classList.add('dragging'); }
+      const rawLeft = startL+(ev.clientX-startX)/tw*100;
+      const newLeft = Math.max(0, Math.min(100 - startW, snapPctToDay(rawLeft)));
+      barEl.style.left = newLeft.toFixed(3)+'%';
     }
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       if (active) {
+        _isDraggingTimelineItem = false;
         barEl.classList.remove('dragging');
         const lPct = parseFloat(barEl.style.left);
         const bar = getBar();
         bar.s = fmtDate(dateFromPct(lPct)); bar.e = fmtDate(dateFromPct(lPct+startW));
         if (typeof schedSave==='function') schedSave();
       }
+      _isDraggingTimelineItem = false;
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
@@ -2206,9 +2220,10 @@ function attachMilestoneHandlers(msEl, i) {
     const trackEl = msEl.parentElement;
     const tw = trackEl.getBoundingClientRect().width;
     const startX = e.clientX, startL = parseFloat(msEl.style.left);
+    _isDraggingTimelineItem = true;
     diamond.style.cursor = 'grabbing';
     function onMove(ev) {
-      const newPct = Math.max(0, Math.min(100, startL+(ev.clientX-startX)/tw*100));
+      const newPct = Math.max(0, Math.min(100, snapPctToDay(startL+(ev.clientX-startX)/tw*100)));
       msEl.style.left = newPct.toFixed(3)+'%';
       const vl = document.getElementById('ms-vline-'+i);
       if (vl) vl.style.left = newPct.toFixed(3)+'%';
@@ -2227,6 +2242,7 @@ function attachMilestoneHandlers(msEl, i) {
       }
     }
     function onUp() {
+      _isDraggingTimelineItem = false;
       diamond.style.cursor = '';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
@@ -2976,6 +2992,7 @@ async function doSave() {
 
 async function pollForChanges() {
   // Don't re-render while user is actively editing or a save is pending
+  if (_isDraggingTimelineItem) return;
   if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
   if (_needsCloudSync && Date.now() - _lastCloudRetry > 5000) {

@@ -910,6 +910,7 @@ function setZoom(z) {
 function frameDefaultTimelineWindow() {
   const leadDays = 7;
   const tailDays = 10;
+  const focusedTrackZoom = 4.19;
   const from = new Date(TODAY);
   from.setDate(from.getDate() - leadDays);
   const to = new Date(D90);
@@ -920,7 +921,9 @@ function frameDefaultTimelineWindow() {
   const viewportWidth = Math.max(1, scrollWrapper.clientWidth);
   const visibleChartWidth = Math.max(1, viewportWidth - stubWidth);
   const targetChartWidth = visibleChartWidth * (TOTAL / windowDays);
-  const targetZoom = (stubWidth + targetChartWidth) / viewportWidth;
+  const targetZoom = ['cloudflare', 'gke'].includes(activeTab)
+    ? focusedTrackZoom
+    : (stubWidth + targetChartWidth) / viewportWidth;
 
   setZoom(targetZoom);
   requestAnimationFrame(() => {

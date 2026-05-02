@@ -926,11 +926,12 @@ function frameDefaultTimelineWindow() {
     : (stubWidth + targetChartWidth) / viewportWidth;
 
   setZoom(targetZoom);
-  requestAnimationFrame(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     const chartWidth = Math.max(1, scrollInner.scrollWidth - stubWidth);
-    const fromPct = Math.max(0, Math.min(1, (from - START) / 864e5 / TOTAL));
-    scrollWrapper.scrollLeft = Math.max(0, (chartWidth * fromPct) - 12);
-  });
+    const center = new Date((from.getTime() + to.getTime()) / 2);
+    const centerPct = Math.max(0, Math.min(1, (center - START) / 864e5 / TOTAL));
+    scrollWrapper.scrollLeft = Math.max(0, (chartWidth * centerPct) - (visibleChartWidth / 2));
+  }));
 }
 
 scrollWrapper.addEventListener('wheel', (e) => {
@@ -1866,15 +1867,7 @@ const TABS = {
         pills: ['Start: May 4, 2026', 'ORG Go/No-Go: June 1, 2026', 'Launch: June 30, 2026']
       },
       blocker: null,
-      footnotes: [
-        { title:'Source Discipline', para:'Cloudflare dates are grounded in the written May 1 sprint plan. Items marked TBD reflect owner gaps or pending allocation from that plan.', items:null },
-        { title:'High-Risk Open Owners', para:null, items:[
-          'AI eval owner / baseline benchmarking owner is still TBD',
-          'Stephen allocation to Job 4 ledger is still pending Ronen/Cait confirmation',
-          'Customer Engineer role/hire is not yet socialized with leadership',
-          'Launch-week incident commander and EJ standby posture need confirmation'
-        ]}
-      ]
+      footnotes: []
     };
   })(),
   gke: (() => {
@@ -2006,14 +1999,7 @@ const TABS = {
         pills: ['Start: May 4, 2026', 'Job 3 Target: June 30, 2026', 'Post-Job-3 Capacity: TBD']
       },
       blocker: null,
-      footnotes: [
-        { title:'Source Discipline', para:'GKE Week 1-2 tasks are grounded in the recording. Later dates are deliberately marked planning hypotheses because the meeting did not lock a full week-by-week schedule.', items:null },
-        { title:'Open Alignment Question', para:null, items:[
-          'If GKE Job 3 finishes early, does the team continue deeper GKE scope or help Cloudflare/support/testing/eval readiness?',
-          'That direction needs to come to the whole team from Katerina/Kyle/Dan, not as a side-channel clarification.',
-          'The Next.js/BFF integration proof is the critical confidence builder; GKE should not build a duplicate UI.'
-        ]}
-      ]
+      footnotes: []
     };
   })()
 };

@@ -1890,95 +1890,128 @@ const TABS = {
     return {
       groups: [
         { label: 'GKE Track — Core Services (Seth)', rows: [
-          { name: 'Auth direction / Descope path', sub: 'Owner: Seth + TBD',
+          { name: 'Refactored ai-native base scaffolding', sub: 'Owner: Seth',
+            bars: [{ s:'2026-04-15', e:'2026-04-22', color:G.service, conf:CONF.source,
+              tip:'Auto gen contracts and hardening · Seth · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Flyway', sub: 'Owner: Seth',
+            bars: [{ s:'2026-04-21', e:'2026-04-25', color:G.service, conf:CONF.source,
+              tip:'Flyway · Seth · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Scheduling', sub: 'Owner: Seth',
+            bars: [{ s:'2026-04-26', e:'2026-05-02', color:G.service, conf:CONF.source,
+              tip:'Scheduling · Seth · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Auth direction / Descope path', sub: 'Owner: Seth',
             bars: [{ s:'2026-05-04', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
-              tip:'Auth direction · Seth + TBD · Decide/implement Descope path; Auth0 appears to be moving out.' }] },
-          { name: 'Care session / Whereby baseline', sub: 'Owner: Seth',
-            bars: [{ s:'2026-05-04', e:'2026-05-15', color:G.service, conf:CONF.source,
-              tip:'Care session baseline · Seth · Proceed with Whereby while Cloudflare/WebRTC decision is pending.' }] },
+              tip:'Auth direction · Seth · Descope path.' }] },
           { name: 'SMS path / Infobip investigation', sub: 'Owner: Seth',
-            bars: [{ s:'2026-05-05', e:'2026-05-15', color:G.service, conf:CONF.source,
+            bars: [{ s:'2026-05-06', e:'2026-05-15', color:G.service, conf:CONF.source,
               tip:'SMS path · Seth · Investigate Infobip after signal that Tebra is moving away from Twilio.' }] },
           { name: 'Email path', sub: 'Owner: Seth + TBD',
-            bars: [{ s:'2026-05-05', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
+            bars: [{ s:'2026-05-06', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
               tip:'Email path · Seth + TBD · Likely existing Tebra email mechanism; final path not confirmed in audio.' }] },
-          { name: 'Sully integration approach', sub: 'Owners: Seth + EJ + TBD',
-            bars: [{ s:'2026-05-07', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
-              tip:'Sully integration approach · Seth + EJ + TBD · Avoid duplicate Sully investigation; align output path with Cloudflare/Whereby decision.' }] },
-          { name: 'Notification service scoping', sub: 'Owner: Seth + TBD',
-            bars: [{ s:'2026-05-09', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
-              tip:'Notification service scoping · Seth + TBD · Provider-facing notification when something happens while away.' }] },
-          { name: 'Note service scoping', sub: 'Owners: Seth + Rich + TBD',
-            bars: [{ s:'2026-05-09', e:'2026-05-15', color:G.tbd, conf:CONF.tbd,
-              tip:'Note service scoping · Seth + Rich + TBD · Store signed notes; separate from existing module/service assumptions.' }] },
-          { name: 'Auth implementation', sub: 'Owner: Seth + TBD',
-            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
-              tip:'Auth implementation · Seth + TBD · Planning hypothesis after direction is confirmed.' }] },
-          { name: 'Core service completion', sub: 'Owners: Seth + Sarvesh + TBD',
-            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.service, conf:CONF.planning,
-              tip:'Core service completion · Seth + Sarvesh + TBD · Complete needed GKE Job 3 services after schema review.' }] },
-          { name: 'Communication implementation', sub: 'Owner: Seth + TBD',
-            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
-              tip:'Communication implementation · Seth + TBD · SMS/email implementation after Week 1-2 path clarification.' }] },
-          { name: 'Note + notification implementation', sub: 'Owners: Seth + Rich + TBD',
-            bars: [{ s:'2026-05-18', e:'2026-05-29', color:G.tbd, conf:CONF.planning,
-              tip:'Note/notification implementation · Seth + Rich + TBD · Planning hypothesis based on scoped services.' }] },
+          { name: 'Sully integration approach', sub: 'Owners: Seth + EJ',
+            bars: [{ s:'2026-05-14', e:'2026-05-25', color:G.tbd, conf:CONF.tbd,
+              tip:'Care Session / Sully · Seth + EJ · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Care session / Whereby baseline', sub: 'Owner: Seth',
+            bars: [{ s:'2026-05-16', e:'2026-06-05', color:G.service, conf:CONF.source,
+              tip:'Cleaned up scaffolding with auto generated contracts · Seth · Reconstructed from Vincent screenshot.' }] },
         ]},
-        { label: 'GKE Track — Data / Clinical Models (Sarvesh + Vince)', rows: [
-          { name: 'Clinical entity/model review', sub: 'Owner: Sarvesh',
-            bars: [{ s:'2026-05-04', e:'2026-05-12', color:G.data, conf:CONF.source,
-              tip:'Clinical model review · Sarvesh · Review clinical entities, patient allergies, relationships, schema fit.' }] },
-          { name: 'Clinical schemas build/deploy', sub: 'Owners: Seth + Sarvesh',
-            bars: [{ s:'2026-05-13', e:'2026-05-16', color:G.data, conf:CONF.source,
-              tip:'Clinical schemas build/deploy · Seth + Sarvesh · Audio expectation: once schemas are good, likely one to two days.' }] },
-          { name: 'Terminology/reference data MVP', sub: 'Owners: Vince + Sarvesh + TBD',
-            bars: [{ s:'2026-05-09', e:'2026-05-16', color:G.tbd, conf:CONF.tbd,
-              tip:'Terminology/reference MVP · Vince + Sarvesh + TBD · Short ICD/CPT/SNOMED/allergy reference data, not full lookup.' }] },
-          { name: 'Test data + DB operational access', sub: 'Owner: Sarvesh',
-            bars: [{ s:'2026-05-20', e:'2026-05-29', color:G.data, conf:CONF.planning,
-              tip:'Test data + DB ops · Sarvesh · Generate data and make sure team has database access/operational paths.' }] },
+        { label: 'GKE Track — Core / Data / Clinical Models', rows: [
+          { name: 'Base ai-native% agents, skills, repos', sub: 'Add details...',
+            bars: [{ s:'2026-04-01', e:'2026-05-01', color:G.data, conf:CONF.source,
+              tip:'Modulith Initiation - Base ai-native% agents, skills, repos, GraphQL, swagger, SpringBoot starter, HTTP Client, etc · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Infra Setup and Validation for Kafka, Postgres, Redis, GCS', sub: 'Owner: Vince',
+            bars: [{ s:'2026-04-02', e:'2026-04-22', color:G.data, conf:CONF.source,
+              tip:'Infra for PG, Redis, GCS, Kafka for 3 Services · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Foundations (Customer, Practice, User, Patient)', sub: 'Owner: Vince',
+            bars: [{ s:'2026-04-14', e:'2026-05-01', color:G.data, conf:CONF.source,
+              tip:'Foundations and unit tests verification and deployment to DEV and QA · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Establish Java Core Spring Libraries', sub: 'Owner: Vince',
+            bars: [{ s:'2026-04-17', e:'2026-05-02', color:G.data, conf:CONF.source,
+              tip:'Spring Libraries for Kafka, SB starter, event outbox · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Published agents, skills for reusability for Org', sub: 'Add details...',
+            bars: [{ s:'2026-04-22', e:'2026-04-29', color:G.data, conf:CONF.source,
+              tip:'Published agents, skills · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Intelligence Gateway Wiring + SSE', sub: 'Add details...',
+            bars: [{ s:'2026-04-26', e:'2026-05-01', color:G.data, conf:CONF.source,
+              tip:'Intelligence Gateway Wiring + SSE · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Session Service', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-01', e:'2026-05-02', color:G.data, conf:CONF.source,
+              tip:'Session Service · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Frontend POC', sub: 'Owner: Vince / Seth',
+            bars: [{ s:'2026-04-26', e:'2026-05-09', color:G.data, conf:CONF.source,
+              tip:'FE POC · Vince / Seth · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Harden Java SB Starter Libraries', sub: 'Owner: Stephen',
+            bars: [{ s:'2026-05-01', e:'2026-05-09', color:G.data, conf:CONF.source,
+              tip:'Java SB Starter Libraries · Stephen · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Billing', sub: 'Owner: Vince / Seth / Stephen',
+            bars: [{ s:'2026-05-09', e:'2026-06-06', color:G.data, conf:CONF.source,
+              tip:'Billing / Stripe? · Vince / Seth / Stephen · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Foundations Pt 2', sub: 'Owner: Vincent',
+            bars: [{ s:'2026-05-02', e:'2026-05-08', color:G.data, conf:CONF.source,
+              tip:'Foundations Pt 2 · Vincent · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Terminology: ICD-10, CPT, SNOMED, allergy, etc', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-04', e:'2026-05-08', color:G.tbd, conf:CONF.tbd,
+              tip:'Terminology · Vince · ICD-10, CPT, SNOMED, allergy, etc.' }] },
+          { name: 'Clinical Entities', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-02', e:'2026-05-12', color:G.data, conf:CONF.source,
+              tip:'Clinical Entities · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Collaboration Scaffold', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-14', e:'2026-05-29', color:G.data, conf:CONF.source,
+              tip:'Collaboration Scaffolding for Notes / TP · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Clinical Orchestration', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-15', e:'2026-05-30', color:G.data, conf:CONF.source,
+              tip:'Clinical Orchestration to Compare Feedback · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Notes', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-23', e:'2026-05-31', color:G.data, conf:CONF.source,
+              tip:'Notes · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Treatment Plan', sub: 'Owner: Vince',
+            bars: [{ s:'2026-05-29', e:'2026-06-06', color:G.data, conf:CONF.source,
+              tip:'Treatment Plan · Vince · Reconstructed from Vincent screenshot.' }] },
+          { name: 'Intelligence Feedback', sub: 'Owner: Vince',
+            bars: [{ s:'2026-06-08', e:'2026-06-15', color:G.data, conf:CONF.source,
+              tip:'Intelligence Feedback / Analytics · Vince · Reconstructed from Vincent screenshot.' }] },
         ]},
         { label: 'GKE Track — Intelligence Layer (Rich)', rows: [
-          { name: 'Intelligence eventing/SSE validation', sub: 'Owners: Rich + EJ',
+          { name: 'Intelligence eventing/SSE validation', sub: 'Owners: Rich + EJ + Vince',
             bars: [{ s:'2026-05-04', e:'2026-05-08', color:G.intel, conf:CONF.source,
-              tip:'Intelligence eventing/SSE · Rich + EJ · Validate workflow events/status connection for front-end visibility.' }] },
+              tip:'Intelligence eventing/SSE · Rich + EJ + Vince · Reconstructed from Vincent screenshot.' }] },
           { name: 'Clinical summary intelligence layer', sub: 'Owner: Rich',
-            bars: [{ s:'2026-05-18', e:'2026-06-05', color:G.intel, conf:CONF.planning,
-              tip:'Clinical summary · Rich · Build patient summary from up to three notes plus possible patient-record context.' }] },
+            bars: [{ s:'2026-05-22', e:'2026-06-06', color:G.intel, conf:CONF.planning,
+              tip:'Clinical summary · Rich · Reconstructed from Vincent screenshot.' }] },
           { name: 'Temporal/checkpointing/model security', sub: 'Owner: Rich',
-            bars: [{ s:'2026-05-18', e:'2026-06-12', color:G.intel, conf:CONF.planning,
-              tip:'Temporal/checkpointing/security · Rich · Finish workflow integration, checkpointing, model wiring, security greenlight.' }] },
+            bars: [{ s:'2026-05-22', e:'2026-06-14', color:G.intel, conf:CONF.planning,
+              tip:'Temporal/checkpointing/security · Rich · Reconstructed from Vincent screenshot.' }] },
           { name: 'Extraction integration validation', sub: 'Owner: Rich + TBD',
             bars: [{ s:'2026-06-02', e:'2026-06-10', color:G.intel, conf:CONF.planning,
-              tip:'Extraction validation · Rich + TBD · Extraction is described as done; validate end-to-end through Job 3 flow.' }] },
+              tip:'Extraction validation · Rich + TBD · Reconstructed from Vincent screenshot.' }] },
         ]},
         { label: 'GKE Track — Next.js / BFF Integration', rows: [
           { name: 'Next.js/BFF to GKE integration plan', sub: 'Owners: EJ + Vince',
-            bars: [{ s:'2026-05-06', e:'2026-05-15', color:G.integration, conf:CONF.source,
-              tip:'Next.js/BFF GKE plan · EJ + Vince · Do not duplicate UI; define GKE path behind existing Next.js/BFF.' }] },
+            bars: [{ s:'2026-05-08', e:'2026-05-15', color:G.integration, conf:CONF.source,
+              tip:'Next · EJ + Vince · Next.js/BFF to GKE integration plan.' }] },
           { name: 'GKE Job 3 integration test defined', sub: 'Owners: EJ + Vince + TBD',
             bars: [{ s:'2026-05-15', e:'2026-05-16', color:G.tbd, conf:CONF.tbd,
-              tip:'GKE Job 3 test defined · EJ + Vince + TBD · Define proof that current UI/BFF can run Job 3 against GKE.' }] },
+              tip:'G · EJ + Vince + TBD · GKE Job 3 integration test defined.' }] },
           { name: 'Next.js/BFF GKE path implementation', sub: 'Owners: EJ + Vince + TBD',
-            bars: [{ s:'2026-05-25', e:'2026-06-05', color:G.integration, conf:CONF.planning,
-              tip:'Next.js/BFF GKE path · EJ + Vince + TBD · Implement route/cutover path behind existing UI.' }] },
+            bars: [{ s:'2026-05-30', e:'2026-06-05', color:G.integration, conf:CONF.planning,
+              tip:'Next · EJ + Vince + TBD · Next.js/BFF GKE path implementation.' }] },
           { name: 'GKE Job 3 E2E proof through existing UI', sub: 'Owners: EJ + Vince + Seth + Rich',
             bars: [{ s:'2026-06-02', e:'2026-06-10', color:G.integration, conf:CONF.planning,
-              tip:'GKE Job 3 E2E proof · EJ + Vince + Seth + Rich · Prove login/patient/note/extraction flow through existing UI.' }] },
+              tip:'GKE Job 3 E2E proof · EJ + Vince + Seth + Rich · Reconstructed from Vincent screenshot.' }] },
           { name: 'GKE Job 3 hardening', sub: 'Owner: GKE Team + TBD',
             bars: [{ s:'2026-06-10', e:'2026-06-20', color:G.ready, conf:CONF.planning,
-              tip:'GKE Job 3 hardening · GKE Team + TBD · Harden after E2E proof; audio gave workstreams but no clean week-by-week schedule.' }] },
+              tip:'GKE Job 3 hardening · GKE Team + TBD · Reconstructed from Vincent screenshot.' }] },
         ]},
         { label: 'GKE Track — Capacity / Launch Readiness', rows: [
-          { name: 'Capacity rule after Job 3', sub: 'Owners: Katerina + Kyle + Dan',
+          { name: 'Capacity rule after Job 3', sub: 'Owners: Catarina + Kyle + Dan',
             bars: [{ s:'2026-06-10', e:'2026-06-14', color:G.risk, conf:CONF.risk,
-              tip:'Capacity rule · Katerina + Kyle + Dan · Decide whether GKE continues deeper scope or helps launch-readiness gaps after Job 3.' }] },
+              tip:'Capacity rule · Catarina + Kyle + Dan · Reconstructed from Vincent screenshot.' }] },
           { name: 'Shared launch-readiness support if needed', sub: 'Owner: GKE Team + TBD',
             bars: [{ s:'2026-06-15', e:'2026-06-26', color:G.tbd, conf:CONF.tbd,
-              tip:'Shared readiness support · GKE Team + TBD · Support/testing/evals/tools if June 30 readiness needs help.' }] },
+              tip:'Shared readiness support · GKE Team + TBD · Reconstructed from Vincent screenshot.' }] },
           { name: 'Final GKE validation', sub: 'Owner: GKE Team + TBD',
-            bars: [{ s:'2026-06-22', e:'2026-06-26', color:G.ready, conf:CONF.planning,
-              tip:'Final GKE validation · GKE Team + TBD · Final validation before June 30 commitment.' }] },
+            bars: [{ s:'2026-06-24', e:'2026-06-27', color:G.ready, conf:CONF.planning,
+              tip:'Final GKE validation · GKE Team + TBD · Reconstructed from Vincent screenshot.' }] },
         ]},
       ],
       milestones: [
@@ -2685,6 +2718,7 @@ document.addEventListener('keydown', (e) => {
 const validTabs = ['jay','cait','rich','syd','mvp','cloudflare','gke'];
 let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:'Road To MVP', cloudflare:'Cloudflare', gke:'GKE' };
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mvp';
+const TAB_STATE_REVISIONS = { gke: '2026-05-02-vincent-restore' };
 
 // ── STORAGE LAYER ──────────────────────────────────
 // To upgrade to Supabase: set these two values and add the Supabase JS CDN
@@ -2695,11 +2729,18 @@ let _supabase = null;
 function storageKey(tab = activeTab) { return 'gantt-state-' + tab; }
 function localDraftKey(key = storageKey()) { return key + '-local-draft'; }
 function savedTime(state) { return Date.parse(state?.saved || '') || 0; }
+function tabFromStorageKey(key = storageKey()) { return key.replace(/^gantt-state-/, '').replace(/-local-draft$/, ''); }
+function stateMatchesCurrentRevision(state, tab = activeTab) {
+  const revision = TAB_STATE_REVISIONS[tab];
+  return !revision || state?.revision === revision;
+}
 
 function loadLocalState(key = storageKey()) {
   try {
     const raw = localStorage.getItem(localDraftKey(key)) || localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const state = JSON.parse(raw);
+    return stateMatchesCurrentRevision(state, tabFromStorageKey(key)) ? state : null;
   } catch { return null; }
 }
 
@@ -2730,7 +2771,8 @@ async function loadState() {
         console.warn('[Gantt] Cloud load failed; using local draft if available.', error);
         return localState;
       }
-      const remoteState = data?.state || null;
+      let remoteState = data?.state || null;
+      if (remoteState && !stateMatchesCurrentRevision(remoteState, activeTab)) remoteState = null;
       if (remoteState && (!localState || savedTime(remoteState) >= savedTime(localState))) {
         saveLocalState(remoteState, key);
         return remoteState;
@@ -2833,6 +2875,7 @@ function getState() {
     fnState,
     zoom: currentZoom,
     tabNames,
+    revision: TAB_STATE_REVISIONS[activeTab] || null,
     saved: new Date().toISOString()
   };
 }

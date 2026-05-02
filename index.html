@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Nitro · Beta Timeline Hypothesis</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
   /* ── Tebra Brand Palette ──────────────────── */
@@ -2713,7 +2712,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ── AUTO-SAVE PERSISTENCE (Oracle API) ───────────────
+// ── AUTO-SAVE PERSISTENCE ────────────────────────────
 // ══════════════════════════════════════════════════════
 const validTabs = ['jay','cait','rich','syd','mvp','cloudflare','gke'];
 let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:'Road To MVP', cloudflare:'Cloudflare', gke:'GKE' };
@@ -2721,10 +2720,8 @@ let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice
 const TAB_STATE_REVISIONS = { gke: '2026-05-02-vincent-restore' };
 
 // ── STORAGE LAYER ──────────────────────────────────
-// To upgrade to Supabase: set these two values and add the Supabase JS CDN
-const SUPABASE_URL = 'https://hstlcfhqylnbhxzomhnb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzdGxjZmhxeWxuYmh4em9taG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDI3ODQsImV4cCI6MjA5MDQ3ODc4NH0.g7MZskJSa3sZNfl259kq_oMkkF2RxU1_6uUTLdlcGW4';
-let _supabase = null;
+const STATE_API = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app/api/state' : '/api/state';
+let _cloudAvailable = true;
 
 function storageKey(tab = activeTab) { return 'gantt-state-' + tab; }
 function localDraftKey(key = storageKey()) { return key + '-local-draft'; }
@@ -2752,38 +2749,48 @@ function saveLocalState(state, key = storageKey()) {
   } catch { return false; }
 }
 
-function initSupabase() {
-  if (SUPABASE_URL && SUPABASE_KEY && typeof supabase !== 'undefined') {
-    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('[Gantt] Using Supabase for persistence');
-  } else {
-    console.log('[Gantt] Using localStorage for persistence');
-  }
+function stateApiUrl(key = storageKey()) {
+  return `${STATE_API}?key=${encodeURIComponent(key)}`;
+}
+
+async function loadCloudState(key = storageKey()) {
+  const res = await fetch(stateApiUrl(key), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Cloud load failed (${res.status})`);
+  const payload = await res.json();
+  return payload?.state || null;
+}
+
+async function saveCloudState(state, key = storageKey()) {
+  const res = await fetch(STATE_API, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, state }),
+    cache: 'no-store'
+  });
+  if (!res.ok) throw new Error(`Cloud save failed (${res.status})`);
+  const payload = await res.json();
+  return payload?.state || state;
 }
 
 async function loadState() {
   const key = storageKey();
   const localState = loadLocalState(key);
-  if (_supabase) {
-    try {
-      const { data, error } = await _supabase.from('gantt_state').select('state').eq('key', key).maybeSingle();
-      if (error) {
-        console.warn('[Gantt] Cloud load failed; using local draft if available.', error);
-        return localState;
-      }
-      let remoteState = data?.state || null;
-      if (remoteState && !stateMatchesCurrentRevision(remoteState, activeTab)) remoteState = null;
-      if (remoteState && (!localState || savedTime(remoteState) >= savedTime(localState))) {
-        saveLocalState(remoteState, key);
-        return remoteState;
-      }
-      return localState || remoteState;
-    } catch (err) {
-      console.warn('[Gantt] Cloud load failed; using local draft if available.', err);
-      return localState;
+  try {
+    let remoteState = await loadCloudState(key);
+    _cloudAvailable = true;
+    if (remoteState && !stateMatchesCurrentRevision(remoteState, activeTab)) remoteState = null;
+    if (remoteState) {
+      saveLocalState(remoteState, key);
+      _needsCloudSync = false;
+      return remoteState;
     }
+    if (localState) _needsCloudSync = true;
+    return localState || remoteState;
+  } catch (err) {
+    _cloudAvailable = false;
+    console.warn('[Gantt] Cloud load failed; using local draft if available.', err);
+    return localState;
   }
-  return localState;
 }
 
 function loadStateWithTimeout(ms = 2500) {
@@ -2797,20 +2804,16 @@ function loadStateWithTimeout(ms = 2500) {
 async function saveState(state) {
   const key = storageKey();
   const localOk = saveLocalState(state, key);
-  if (_supabase) {
-    try {
-      const { error } = await _supabase.from('gantt_state').upsert({ key, state, updated_at: new Date().toISOString() });
-      if (error) {
-        console.error('[Gantt] Cloud save failed; local draft is preserved.', error);
-        return { ok: localOk, local: localOk, cloud: false, error };
-      }
-      return { ok: true, local: localOk, cloud: true };
-    } catch (err) {
-      console.error('[Gantt] Cloud save failed; local draft is preserved.', err);
-      return { ok: localOk, local: localOk, cloud: false, error: err };
-    }
+  try {
+    const cloudState = await saveCloudState(state, key);
+    _cloudAvailable = true;
+    saveLocalState(cloudState, key);
+    return { ok: true, local: localOk, cloud: true, state: cloudState };
+  } catch (err) {
+    _cloudAvailable = false;
+    console.error('[Gantt] Cloud save failed; local draft is preserved.', err);
+    return { ok: localOk, local: localOk, cloud: false, error: err };
   }
-  return { ok: localOk, local: localOk, cloud: false };
 }
 
 const saveInd = document.getElementById('save-ind');
@@ -2884,6 +2887,17 @@ function hashState(state) {
   return JSON.stringify(state.groups || state.barState) + JSON.stringify(state.milestones || state.msState) + JSON.stringify(state.fnState) + (state.zoom || 1) + JSON.stringify(state.tabNames || {});
 }
 
+function saveLocalDraftNow() {
+  if (!currentGroups || !currentMilestones) return false;
+  const state = getState();
+  const ok = saveLocalState(state);
+  if (ok) {
+    _lastSavedHash = hashState(state);
+    _needsCloudSync = true;
+  }
+  return ok;
+}
+
 function applyState(state) {
   if (!state) return;
   // v2 format: full structural data
@@ -2935,6 +2949,7 @@ function schedSave() {
   if (!_undoTimer) {
     _undoTimer = setTimeout(() => { pushUndo(); _undoTimer = null; }, 50);
   }
+  saveLocalDraftNow();
   saveInd.textContent = '\u25cf Saving\u2026';
   saveInd.className = 'save-ind saving';
   _saveTimer = setTimeout(doSave, 400);
@@ -2950,7 +2965,7 @@ async function doSave() {
   if (result.ok) {
     _lastSavedHash = h;
     const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-    _needsCloudSync = !!(_supabase && !result.cloud);
+    _needsCloudSync = !result.cloud;
     saveInd.textContent = _needsCloudSync ? '\u26a0 Saved locally' : '\u2713 Saved '+t;
     saveInd.className = _needsCloudSync ? 'save-ind error' : 'save-ind saved';
     if (!_needsCloudSync) setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
@@ -2963,7 +2978,7 @@ async function pollForChanges() {
   // Don't re-render while user is actively editing or a save is pending
   if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
-  if (_needsCloudSync && Date.now() - _lastCloudRetry > 30000) {
+  if (_needsCloudSync && Date.now() - _lastCloudRetry > 5000) {
     _lastCloudRetry = Date.now();
     await doSave();
     if (_needsCloudSync) return;
@@ -2982,19 +2997,17 @@ async function pollForChanges() {
 let _initialLoadDone = false;
 document.addEventListener('mouseup', () => { if (_initialLoadDone && _saveTimer===null) setTimeout(schedSave, 200); });
 window.addEventListener('beforeunload', () => {
-  if (!_initialLoadDone) return;
   clearTimeout(_saveTimer);
-  saveLocalState(getState());
+  saveLocalDraftNow();
 });
 window.addEventListener('pagehide', () => {
-  if (!_initialLoadDone) return;
   clearTimeout(_saveTimer);
-  saveLocalState(getState());
+  saveLocalDraftNow();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && _initialLoadDone) {
     clearTimeout(_saveTimer);
-    saveLocalState(getState());
+    saveLocalDraftNow();
   }
 });
 
@@ -3011,13 +3024,20 @@ async function switchTab(tab) {
   renderChart(tab);
   renderHeader(tab);
   renderFootnotes(tab);
-  frameDefaultTimelineWindow();
-  saveInd.textContent = '\u25cf Loading\u2026'; saveInd.className = 'save-ind saving';
-  const state = await loadStateWithTimeout();
-  if (state) applyState(state);
+  const localState = loadLocalState();
+  if (localState) applyState(localState);
+  _lastSavedHash = hashState(localState || getState());
   frameDefaultTimelineWindow();
   saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
-  setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 1500);
+  const baselineHash = _lastSavedHash;
+  loadStateWithTimeout().then(state => {
+    if (!state || _needsCloudSync || _lastSavedHash !== baselineHash) return;
+    const incomingHash = hashState(state);
+    if (incomingHash !== _lastSavedHash) {
+      applyState(state);
+      frameDefaultTimelineWindow();
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════
@@ -3028,18 +3048,18 @@ renderChart(activeTab);
 renderHeader(activeTab);
 renderFootnotes(activeTab);
 
-initSupabase();
+const localInitialState = loadLocalState();
+if (localInitialState) applyState(localInitialState);
+_lastSavedHash = hashState(localInitialState || getState());
 frameDefaultTimelineWindow();
+_initialLoadDone = true;
 loadStateWithTimeout().then(state => {
-  if (state) {
+  if (state && !_needsCloudSync && hashState(state) !== _lastSavedHash) {
     applyState(state);
     _lastSavedHash = hashState(state);
-  } else {
-    _lastSavedHash = hashState(getState());
+    frameDefaultTimelineWindow();
   }
-  frameDefaultTimelineWindow();
-  _initialLoadDone = true;
-  if (_supabase) _pollTimer = setInterval(pollForChanges, 5000);
+  _pollTimer = setInterval(pollForChanges, 1200);
 });
 
 // ── EDITABLE TAB NAMES ──────────────────────────────

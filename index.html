@@ -2055,92 +2055,410 @@ const TABS = {
     };
     return {
       groups: [
-        { label: 'Cloudflare — Notifications + Communication (Seth)', rows: [
-          { name: 'Notification architecture and service baseline', sub: 'Owner: Seth · Reviewer: EJ',
-            bars: [{ s:'2026-05-06', e:'2026-05-15', color:N.cloud, conf:CONF.source,
-              tip:'Notifications baseline (8d) · Seth · Define notification service, events, baseline send path, and what every job consumes.' }] },
-          { name: 'Communication path: SMS + email', sub: 'Owner: Seth · Vendor direction: Infobip to verify',
-            bars: [{ s:'2026-05-06', e:'2026-05-15', color:N.cloud, conf:CONF.source,
-              tip:'Communication baseline (8d) · Seth · SMS/email path, Infobip assumption, compliance questions, and integration shape.' }] },
-          { name: 'Notification/communication service buildout', sub: 'Owner: Seth · EJ supports service boundaries',
-            bars: [{ s:'2026-05-18', e:'2026-05-29', color:N.cloud, conf:CONF.source,
-              tip:'Service buildout (10d) · Seth · Build the usable API/service baseline and hand off integration pattern to other owners.' }] },
-          { name: 'Cross-job integration support and API adjustments', sub: 'Owner: Seth · All jobs consume the pattern',
-            bars: [{ s:'2026-06-01', e:'2026-06-05', color:N.cloud, conf:CONF.planning,
-              tip:'Cross-job support (5d) · Seth · Help other workstreams wire notifications and adjust endpoints as gaps appear.' }] },
-        ]},
-        { label: 'Cloudflare — Notes Domain + Clinical Model (Vincent)', rows: [
-          { name: 'Note service and note entities', sub: 'Owner: Vincent · Reviewer: EJ',
-            bars: [{ s:'2026-05-06', e:'2026-05-15', color:N.model, conf:CONF.source,
-              tip:'Note service first slice (8d) · Vincent · Save notes manually to the right entities, surface note details, shape note endpoints/templates.' }] },
-          { name: 'POMR model and longitudinal data model', sub: 'Owner: Vincent',
-            bars: [{ s:'2026-05-06', e:'2026-05-22', color:N.model, conf:CONF.source,
-              tip:'POMR model (13d) · Vincent · Define longevity/lifecycle of clinical entities and how the data is modeled over time.' }] },
-          { name: 'Clinical entities, encounter, treatment plan', sub: 'Owner: Vincent · Jobs 2/3 to verify',
-            bars: [{ s:'2026-05-18', e:'2026-05-26', color:N.model, conf:CONF.source,
-              tip:'Clinical model expansion (7d) · Vincent · Problems, allergies, vitals, medications, encounter schema, and treatment plan as separate domain concept.' }] },
-          { name: 'AI feedback data and notes handoff', sub: 'Owner: Vincent · EJ/Rich boundary to confirm',
-            bars: [{ s:'2026-05-27', e:'2026-06-05', color:N.model, conf:CONF.planning,
-              tip:'Notes handoff (8d) · Vincent · Store approve/reject feedback on AI suggestions and hand off stable note/treatment plan surfaces.' }] },
-        ]},
-        { label: 'Cloudflare — App Architecture + Release Backbone (Cameron)', rows: [
-          { name: 'Auth0 roles and permissions', sub: 'Owner: Cameron · Reviewer: EJ',
-            bars: [{ s:'2026-05-06', e:'2026-05-22', color:N.product, conf:CONF.source,
-              tip:'Auth0 roles/permissions (13d) · Cameron · Inspect existing Auth0/session/roles plans and implement June 30 minimum permissions path.' }] },
-          { name: 'Application hygiene and AI-assisted repo workflow', sub: 'Owner: Cameron · Reviewer: EJ',
-            bars: [{ s:'2026-05-06', e:'2026-06-30', color:N.product, conf:CONF.source,
-              tip:'Application hygiene (through launch) · Cameron · Plans, docs, skills, GitHub Actions, repo guardrails, and targeted AI workflow for multi-engineer delivery.' }] },
-          { name: 'Stripe Connect integration path', sub: 'Owner: Cameron · Customer-owned Stripe model',
-            bars: [{ s:'2026-05-07', e:'2026-05-22', color:N.product, conf:CONF.source,
-              tip:'Stripe Connect path (12d) · Cameron · Customer owns/configures Stripe account; Nitro connects rather than taking on accounting/account ownership.' }] },
-          { name: 'Cloudflare feature support and EJ overflow', sub: 'Owner: Cameron · flexible capacity',
-            bars: [{ s:'2026-05-25', e:'2026-06-30', color:N.product, conf:CONF.planning,
-              tip:'Feature support (through launch) · Cameron · Pick up EJ-adjacent Cloudflare work, support UI/backend execution, and stabilize the release path.' }] },
-        ]},
-        { label: 'Cloudflare — System Integration + Launch Stabilization (EJ)', rows: [
-          { name: 'UI cross-cutting and backend wiring support', sub: 'Owner: EJ',
-            bars: [{ s:'2026-05-06', e:'2026-06-30', color:N.architecture, conf:CONF.source,
-              tip:'Cross-cutting wiring (through launch) · EJ · Stand in for UI concerns, wire backend services, and keep domain boundaries coherent.' }] },
-          { name: 'Note generation lifecycle and AI/user feedback model', sub: 'Owner: EJ · Vincent/Rich dependencies',
-            bars: [{ s:'2026-05-06', e:'2026-05-29', color:N.architecture, conf:CONF.source,
-              tip:'AI note lifecycle (18d) · EJ · Define generation lifecycle, feedback capture, and handoff with note service/domain model.' }] },
-          { name: 'Telehealth, audio recording, transcription decisions', sub: 'Owner: EJ',
-            bars: [{ s:'2026-05-11', e:'2026-05-29', color:N.architecture, conf:CONF.planning,
-              tip:'Telehealth/audio decisions (15d) · EJ · Resolve security/legal signoff, CF-native vs Whereby, recording/transcription integration partner.' }] },
-          { name: 'Scheduling, support, instrumentation, eventing', sub: 'Owner: EJ · DevOps supports instrumentation',
-            bars: [{ s:'2026-05-18', e:'2026-06-12', color:N.architecture, conf:CONF.planning,
-              tip:'Ops and eventing path (20d) · EJ · Scheduling domain, customer/dev support, logs/drains/datadog, outboxing, DLQ, and replay patterns.' }] },
-          { name: 'Release stabilization and cross-track integration', sub: 'Owner: EJ · Cameron supports',
-            bars: [{ s:'2026-06-15', e:'2026-06-30', color:N.architecture, conf:CONF.planning,
-              tip:'Launch stabilization (12d) · EJ · Cross-track integration, late bug triage, and June 30 readiness.' }] },
-        ]},
-        { label: 'Cloudflare — AI Surfaces (Rich · confirm)', rows: [
-          { name: 'AI summary', sub: 'Owner: Rich · board-based placeholder',
-            bars: [{ s:'2026-05-11', e:'2026-05-29', color:N.tbd, conf:CONF.tbd,
-              tip:'AI summary (15d) · Rich · Board-based placeholder; needs owner/scope confirmation in standup.' }] },
-          { name: 'AI data extraction', sub: 'Owner: Rich · board-based placeholder',
-            bars: [{ s:'2026-05-11', e:'2026-06-05', color:N.tbd, conf:CONF.tbd,
-              tip:'AI data extraction (20d) · Rich · Board-based placeholder; likely supports notes, clinical entities, and summary surfaces.' }] },
-          { name: 'AI integration support and stabilization', sub: 'Owner: Rich · board-based placeholder',
-            bars: [{ s:'2026-06-08', e:'2026-06-19', color:N.tbd, conf:CONF.tbd,
-              tip:'AI stabilization (10d) · Rich · Placeholder for integration validation and hardening after extraction/summary path lands.' }] },
-        ]},
-        { label: 'Milestone Windows — Integration, Hardening, Launch', rows: [
-          { name: 'Cloudflare integration hardening', sub: 'Owners: EJ + Cameron + workstream owners',
-            bars: [{ s:'2026-06-08', e:'2026-06-12', color:N.risk, conf:CONF.gate,
-              tip:'Integration hardening (5d) · EJ + Cameron · Cross-job hardening before the release stabilization window.' }] },
-          { name: 'Release stabilization window', sub: 'Owners: EJ + Cameron · all owners support',
-            bars: [{ s:'2026-06-15', e:'2026-06-30', color:N.risk, conf:CONF.gate,
-              tip:'Release stabilization (12d) · EJ + Cameron · Final QA, bug triage, launch readiness, and cross-track integration.' }] },
-        ]},
+              {
+                      "label": "Cloudflare —Notifications + CommS (Seth)",
+                      "rows": [
+                              {
+                                      "name": "Notification architecture and service baseline",
+                                      "sub": "Owner: Seth · Reviewer: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-15",
+                                                      "color": "#004952",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Notifications baseline (8d) · Seth · Define notification service, events, baseline send path, and what every job consumes."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Communication path: SMS + email",
+                                      "sub": "Owner: Seth · Vendor direction: Infobip to verify",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-15",
+                                                      "color": "#004952",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Communication baseline (8d) · Seth · SMS/email path, Infobip assumption, compliance questions, and integration shape."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Not/commsservice buildout",
+                                      "sub": "Owner: Seth · EJ supports service boundaries",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-14",
+                                                      "e": "2026-05-25",
+                                                      "color": "#004952",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Service buildout (10d) · Seth · Build the usable API/service baseline and hand off integration pattern to other owners."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Cross-job integration support and API adjustments",
+                                      "sub": "Owner: Seth · All jobs consume the pattern",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-25",
+                                                      "e": "2026-06-01",
+                                                      "color": "#004952",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Cross-job support (5d) · Seth · Help other workstreams wire notifications and adjust endpoints as gaps appear."
+                                              }
+                                      ]
+                              }
+                      ]
+              },
+              {
+                      "label": "Cloudflare —Notes Domain + Clinical Model (Vincent)",
+                      "rows": [
+                              {
+                                      "name": "Note service and note entities",
+                                      "sub": "Owner: Vincent · Reviewer: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-15",
+                                                      "color": "#3D8F8A",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Note service first slice (8d) · Vincent · Save notes manually to the right entities, surface note details, shape note endpoints/templates."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "POMR model and longitudinal data model",
+                                      "sub": "Owner: Vincent",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-22",
+                                                      "color": "#3D8F8A",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "POMR model (13d) · Vincent · Define longevity/lifecycle of clinical entities and how the data is modeled over time."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Clinical entities, encounter, treatment plan",
+                                      "sub": "Owner: Vincent · Jobs 2/3 to verify",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-18",
+                                                      "e": "2026-05-26",
+                                                      "color": "#3D8F8A",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Clinical model expansion (7d) · Vincent · Problems, allergies, vitals, medications, encounter schema, and treatment plan as separate domain concept."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "AI feedback data and notes handoff",
+                                      "sub": "Owner: Vincent · EJ/Rich boundary to confirm",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-25",
+                                                      "e": "2026-06-01",
+                                                      "color": "#3D8F8A",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Notes handoff (8d) · Vincent · Store approve/reject feedback on AI suggestions and hand off stable note/treatment plan surfaces."
+                                              }
+                                      ]
+                              }
+                      ]
+              },
+              {
+                      "label": "Cloudflare —App Architecture + Release Backbone (Cameron)",
+                      "rows": [
+                              {
+                                      "name": "Auth0 roles and permissions",
+                                      "sub": "Owner: Cameron · Reviewer: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-22",
+                                                      "color": "#3A7CA5",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Auth0 roles/permissions (13d) · Cameron · Inspect existing Auth0/session/roles plans and implement June 30 minimum permissions path."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Application hygiene and AI-assisted repo workflow",
+                                      "sub": "Owner: Cameron · Reviewer: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-06-30",
+                                                      "color": "#3A7CA5",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Application hygiene (through launch) · Cameron · Plans, docs, skills, GitHub Actions, repo guardrails, and targeted AI workflow for multi-engineer delivery."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Stripe Connect integration path",
+                                      "sub": "Owner: Cameron · Customer-owned Stripe model",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-07",
+                                                      "e": "2026-05-22",
+                                                      "color": "#3A7CA5",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Stripe Connect path (12d) · Cameron · Customer owns/configures Stripe account; Nitro connects rather than taking on accounting/account ownership."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Cloudflare feature support and EJ overflow",
+                                      "sub": "Owner: Cameron · flexible capacity",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-21",
+                                                      "e": "2026-06-26",
+                                                      "color": "#3A7CA5",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Feature support (through launch) · Cameron · Pick up EJ-adjacent Cloudflare work, support UI/backend execution, and stabilize the release path."
+                                              }
+                                      ]
+                              }
+                      ]
+              },
+              {
+                      "label": "Cloudflare —System Integration + Launch Stabilization (EJ)",
+                      "rows": [
+                              {
+                                      "name": "UI cross-cutting and backend wiring support",
+                                      "sub": "Owner: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-06-30",
+                                                      "color": "#6D28D9",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "Cross-cutting wiring (through launch) · EJ · Stand in for UI concerns, wire backend services, and keep domain boundaries coherent."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Note generation lifecycle and AI/user feedback model",
+                                      "sub": "Owner: EJ · Vincent/Rich dependencies",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-06",
+                                                      "e": "2026-05-29",
+                                                      "color": "#6D28D9",
+                                                      "conf": {
+                                                              "label": "MEETING-CHECKED",
+                                                              "bg": "#004952"
+                                                      },
+                                                      "tip": "AI note lifecycle (18d) · EJ · Define generation lifecycle, feedback capture, and handoff with note service/domain model."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Telehealth, audio recording, transcription decisions",
+                                      "sub": "Owner: EJ",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-11",
+                                                      "e": "2026-05-29",
+                                                      "color": "#6D28D9",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Telehealth/audio decisions (15d) · EJ · Resolve security/legal signoff, CF-native vs Whereby, recording/transcription integration partner."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Scheduling, support, instrumentation, eventing",
+                                      "sub": "Owner: EJ · DevOps supports instrumentation",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-18",
+                                                      "e": "2026-06-12",
+                                                      "color": "#6D28D9",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Ops and eventing path (20d) · EJ · Scheduling domain, customer/dev support, logs/drains/datadog, outboxing, DLQ, and replay patterns."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Release stabilization and cross-track integration",
+                                      "sub": "Owner: EJ · Cameron supports",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-06-15",
+                                                      "e": "2026-06-30",
+                                                      "color": "#6D28D9",
+                                                      "conf": {
+                                                              "label": "PLANNING",
+                                                              "bg": "#3A7CA5"
+                                                      },
+                                                      "tip": "Launch stabilization (12d) · EJ · Cross-track integration, late bug triage, and June 30 readiness."
+                                              }
+                                      ]
+                              }
+                      ]
+              },
+              {
+                      "label": "Cloudflare —AI Surfaces (Rich · confirm)",
+                      "rows": [
+                              {
+                                      "name": "AI summary",
+                                      "sub": "Owner: Rich · board-based placeholder",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-11",
+                                                      "e": "2026-05-29",
+                                                      "color": "#FF8D6E",
+                                                      "conf": {
+                                                              "label": "VERIFY OWNER",
+                                                              "bg": "#CC6F4E"
+                                                      },
+                                                      "tip": "AI summary (15d) · Rich · Board-based placeholder; needs owner/scope confirmation in standup."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "AI data extraction",
+                                      "sub": "Owner: Rich · board-based placeholder",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-05-11",
+                                                      "e": "2026-06-05",
+                                                      "color": "#FF8D6E",
+                                                      "conf": {
+                                                              "label": "VERIFY OWNER",
+                                                              "bg": "#CC6F4E"
+                                                      },
+                                                      "tip": "AI data extraction (20d) · Rich · Board-based placeholder; likely supports notes, clinical entities, and summary surfaces."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "AI integration support and stabilization",
+                                      "sub": "Owner: Rich · board-based placeholder",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-06-08",
+                                                      "e": "2026-06-19",
+                                                      "color": "#FF8D6E",
+                                                      "conf": {
+                                                              "label": "VERIFY OWNER",
+                                                              "bg": "#CC6F4E"
+                                                      },
+                                                      "tip": "AI stabilization (10d) · Rich · Placeholder for integration validation and hardening after extraction/summary path lands."
+                                              }
+                                      ]
+                              }
+                      ]
+              },
+              {
+                      "label": "Milestone Windows —Integration, Hardening, Launch",
+                      "rows": [
+                              {
+                                      "name": "Cloudflare integration hardening",
+                                      "sub": "Owners: EJ + Cameron + workstream owners",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-06-08",
+                                                      "e": "2026-06-12",
+                                                      "color": "#D94040",
+                                                      "conf": {
+                                                              "label": "GATE",
+                                                              "bg": "#6D28D9"
+                                                      },
+                                                      "tip": "Integration hardening (5d) · EJ + Cameron · Cross-job hardening before the release stabilization window."
+                                              }
+                                      ]
+                              },
+                              {
+                                      "name": "Release stabilization window",
+                                      "sub": "Owners: EJ + Cameron · all owners support",
+                                      "bars": [
+                                              {
+                                                      "s": "2026-06-11",
+                                                      "e": "2026-06-29",
+                                                      "color": "#D94040",
+                                                      "conf": {
+                                                              "label": "GATE",
+                                                              "bg": "#6D28D9"
+                                                      },
+                                                      "tip": "Release stabilization (12d) · EJ + Cameron · Final QA, bug triage, launch readiness, and cross-track integration."
+                                              }
+                                      ]
+                              }
+                      ]
+              }
       ],
       milestones: [
-        { date:'2026-05-15', name:'Baselines Locked', sub:'May 15' },
-        { date:'2026-05-22', name:'Auth/Stripe/Ledger Check', sub:'May 22' },
-        { date:'2026-06-05', name:'Service Handoffs', sub:'Jun 5' },
-        { date:'2026-06-12', name:'Integration Hardening', sub:'Jun 12' },
-        { date:'2026-06-19', name:'GKE Architecture Checkpoint', sub:'Jun 19' },
-        { date:'2026-06-30', name:'June 30 Release Target', sub:'Jun 30' },
+              {
+                      "date": "2026-05-22",
+                      "name": "Auth/Stripe/Ledger Check",
+                      "sub": "May 22"
+              },
+              {
+                      "date": "2026-06-01",
+                      "name": "Service Handoffs",
+                      "sub": "Jun 1"
+              },
+              {
+                      "date": "2026-06-12",
+                      "name": "Integration Hardening",
+                      "sub": "Jun 12"
+              },
+              {
+                      "date": "2026-06-30",
+                      "name": "June 30 Release Target",
+                      "sub": "Jun 30"
+              }
       ],
       betaDate: '2026-06-30',
       betaMsIndex: 5,

@@ -3375,20 +3375,41 @@ const TAB_STATE_REVISIONS = { gke: '2026-05-02-vincent-restore' };
 
 // ── VIEWER PRESENCE ─────────────────────────────────
 const PRESENCE_API = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app/api/presence' : '/api/presence';
-const PRESENCE_INTERVAL_MS = 15000;
-const PRESENCE_CLIENT_KEY = 'nitro-presence-client-id';
+const PRESENCE_INTERVAL_MS = 10000;
+const PRESENCE_USER_KEY = 'nitro-presence-user-id';
+const PRESENCE_SESSION_KEY = 'nitro-presence-session-id';
 let _presenceTimer = null;
 
-function presenceClientId() {
+function makePresenceId(prefix) {
+  const raw = window.crypto?.randomUUID
+    ? window.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${raw}`.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function presenceUserId() {
   try {
-    let id = localStorage.getItem(PRESENCE_CLIENT_KEY);
+    let id = localStorage.getItem(PRESENCE_USER_KEY);
     if (!id) {
-      id = (crypto.randomUUID ? crypto.randomUUID() : `viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g, '');
-      localStorage.setItem(PRESENCE_CLIENT_KEY, id);
+      id = makePresenceId('user');
+      localStorage.setItem(PRESENCE_USER_KEY, id);
     }
     return id;
   } catch {
-    return `viewer-${Math.random().toString(36).slice(2)}`;
+    return makePresenceId('user');
+  }
+}
+
+function presenceSessionId() {
+  try {
+    let id = sessionStorage.getItem(PRESENCE_SESSION_KEY);
+    if (!id) {
+      id = makePresenceId('session');
+      sessionStorage.setItem(PRESENCE_SESSION_KEY, id);
+    }
+    return id;
+  } catch {
+    return makePresenceId('session');
   }
 }
 
@@ -3403,12 +3424,21 @@ function setViewerCount(count, online = true) {
     : 'Viewer count unavailable';
 }
 
+function presencePayload(action = 'view') {
+  return {
+    userId: presenceUserId(),
+    sessionId: presenceSessionId(),
+    tab: activeTab,
+    action
+  };
+}
+
 async function updatePresence() {
   try {
     const res = await fetch(PRESENCE_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientId: presenceClientId(), tab: activeTab }),
+      body: JSON.stringify(presencePayload('view')),
       cache: 'no-store'
     });
     if (!res.ok) throw new Error(`Presence failed (${res.status})`);
@@ -3424,6 +3454,28 @@ function startPresence() {
   updatePresence();
   clearInterval(_presenceTimer);
   _presenceTimer = setInterval(updatePresence, PRESENCE_INTERVAL_MS);
+}
+
+function leavePresence() {
+  clearInterval(_presenceTimer);
+  _presenceTimer = null;
+  const body = JSON.stringify(presencePayload('leave'));
+  try {
+    if (navigator.sendBeacon) {
+      const blob = new Blob([body], { type: 'application/json' });
+      navigator.sendBeacon(PRESENCE_API, blob);
+      return;
+    }
+  } catch {}
+  try {
+    fetch(PRESENCE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      cache: 'no-store',
+      keepalive: true
+    }).catch(() => {});
+  } catch {}
 }
 
 // ── STORAGE LAYER ──────────────────────────────────
@@ -3799,17 +3851,20 @@ document.addEventListener('mouseup', () => { if (_initialLoadDone && _saveTimer=
 window.addEventListener('beforeunload', () => {
   clearTimeout(_saveTimer);
   flushCloudOnUnload();
+  leavePresence();
 });
 window.addEventListener('pagehide', () => {
   clearTimeout(_saveTimer);
   flushCloudOnUnload();
+  leavePresence();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && _initialLoadDone) {
     clearTimeout(_saveTimer);
     flushCloudOnUnload();
+    leavePresence();
   } else if (document.visibilityState === 'visible') {
-    updatePresence();
+    startPresence();
   }
 });
 

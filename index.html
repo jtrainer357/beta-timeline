@@ -556,6 +556,10 @@ html.file-recovery-mode body > :not(#file-recovery) {
   overflow: visible;
 }
 .bar:hover { filter: brightness(.88); }
+.bar.is-dotted {
+  background: var(--bg-alt) !important;
+  border: 1.5px dashed currentColor;
+}
 .bar-txt {
   font-size: 11px;
   font-weight: 600;
@@ -611,6 +615,64 @@ html.file-recovery-mode body > :not(#file-recovery) {
 .bar.dragging .bar-tip { display: none !important; }
 .brh { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 2; }
 .brh::after { content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 2px; height: 10px; border-right: 1px solid rgba(255,255,255,.4); border-left: 1px solid rgba(255,255,255,.4); }
+.bar.is-dotted .brh::after { border-color: currentColor; opacity: .45; }
+.bar-menu {
+  position: fixed;
+  z-index: 500;
+  min-width: 204px;
+  padding: 10px;
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 8px;
+  box-shadow: 0 14px 32px rgba(43,43,43,.16);
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--txt);
+}
+.bar-menu-title {
+  margin: 0 0 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--txt-s);
+}
+.bar-color-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 22px);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.bar-color-option {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(43,43,43,.12);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.bar-color-option.active {
+  outline: 2px solid var(--g);
+  outline-offset: 2px;
+}
+.bar-menu-action {
+  width: 100%;
+  border: 1px solid var(--brd);
+  background: var(--bg-alt);
+  border-radius: 6px;
+  padding: 7px 9px;
+  margin-top: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--txt);
+  cursor: pointer;
+}
+.bar-menu-action:hover,
+.bar-color-option:hover {
+  filter: brightness(.96);
+}
 .ms-diamond { cursor: grab; transition: transform .1s; }
 .ms-diamond.dragging { cursor: grabbing; }
 .vl-ms { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2.5px dashed var(--g); opacity: .3; pointer-events: none; }
@@ -2668,6 +2730,7 @@ let betaLine = null;
 let deltaEl = null;
 let deltaLabel = null;
 let _isDraggingTimelineItem = false;
+let _barContextMenu = null;
 
 const TBD_COLOR = '#FF8D6E';
 
@@ -2689,6 +2752,35 @@ const LANE_COLORS = [
   '#5A6364',  // Charcoal
 ];
 function laneColor(gi) { return LANE_COLORS[gi % LANE_COLORS.length]; }
+const BAR_COLOR_OPTIONS = [
+  { label: 'Growth', color: '#004952' },
+  { label: 'Growth Light', color: '#3D8F8A' },
+  { label: 'Steel', color: '#3A7CA5' },
+  { label: 'Vitality', color: '#FF8D6E' },
+  { label: 'Sage', color: '#8CA7A2' },
+  { label: 'Forest', color: '#2D6A4F' },
+  { label: 'Purple', color: '#6D28D9' },
+  { label: 'Coral', color: '#D95F3F' },
+  { label: 'Deep Blue', color: '#1A6FA8' },
+  { label: 'Lavender', color: '#7C5CBF' },
+  { label: 'Amber', color: '#B5651D' },
+  { label: 'Moss', color: '#4A7C59' },
+  { label: 'Sienna', color: '#8B5E3C' },
+  { label: 'Charcoal', color: '#5A6364' },
+];
+
+function barDisplayColor(bar, gi) {
+  return bar.customColor || laneColor(gi);
+}
+
+function isDottedBar(bar) {
+  if (bar.treatment) return bar.treatment === 'dotted';
+  return bar.treatment === 'dotted' || (!bar.customColor && bar.color === TBD_COLOR);
+}
+
+function barTextStyle(bar, gi) {
+  return isDottedBar(bar) ? ` style="color:${barDisplayColor(bar, gi)};"` : '';
+}
 
 function updateDelta() {
   if (!deltaEl || !deltaLabel || !betaLine) return;
@@ -2733,8 +2825,75 @@ function makeEditable(el) {
   });
 }
 
+function closeBarMenu() {
+  if (_barContextMenu) {
+    _barContextMenu.remove();
+    _barContextMenu = null;
+  }
+}
+
+function placeBarMenu(menu, x, y) {
+  document.body.appendChild(menu);
+  const rect = menu.getBoundingClientRect();
+  const left = Math.min(window.innerWidth - rect.width - 12, Math.max(12, x));
+  const top = Math.min(window.innerHeight - rect.height - 12, Math.max(12, y));
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+function showBarMenu(e, gi, ri, bi) {
+  e.preventDefault();
+  e.stopPropagation();
+  closeBarMenu();
+  const bar = currentGroups[gi]?.rows?.[ri]?.bars?.[bi];
+  if (!bar) return;
+
+  const menu = document.createElement('div');
+  menu.className = 'bar-menu';
+  menu.innerHTML = `
+    <div class="bar-menu-title">Bar Color</div>
+    <div class="bar-color-grid">
+      ${BAR_COLOR_OPTIONS.map(option => `
+        <button class="bar-color-option${barDisplayColor(bar, gi).toLowerCase() === option.color.toLowerCase() ? ' active' : ''}"
+          type="button"
+          title="${option.label}"
+          data-color="${option.color}"
+          style="background:${option.color};"></button>
+      `).join('')}
+    </div>
+    <button class="bar-menu-action" type="button" data-action="lane-color">Use swimlane color</button>
+    <button class="bar-menu-action" type="button" data-action="toggle-dotted">${isDottedBar(bar) ? 'Use solid bar' : 'Use dotted line treatment'}</button>
+  `;
+
+  menu.addEventListener('click', (ev) => {
+    const colorBtn = ev.target.closest('[data-color]');
+    const actionBtn = ev.target.closest('[data-action]');
+    if (!colorBtn && !actionBtn) return;
+    ev.stopPropagation();
+    pushUndo();
+    if (colorBtn) {
+      bar.customColor = colorBtn.dataset.color;
+      if (!bar.treatment) bar.treatment = 'solid';
+    } else if (actionBtn.dataset.action === 'lane-color') {
+      delete bar.customColor;
+    } else if (actionBtn.dataset.action === 'toggle-dotted') {
+      bar.treatment = isDottedBar(bar) ? 'solid' : 'dotted';
+    }
+    renderChart(activeTab);
+    renderHeader(activeTab);
+    renderFootnotes(activeTab);
+    schedSave();
+    closeBarMenu();
+  });
+
+  _barContextMenu = menu;
+  placeBarMenu(menu, e.clientX, e.clientY);
+}
+
 function attachBarHandlers(barEl, gi, ri, bi) {
   const getBar = () => currentGroups[gi].rows[ri].bars[bi];
+
+  barEl.addEventListener('contextmenu', (e) => showBarMenu(e, gi, ri, bi));
 
   barEl.querySelector('.brh').addEventListener('mousedown', (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -3006,14 +3165,14 @@ function renderChart(tabKey) {
       row.bars.forEach((bar, bi) => {
         const left = p(dt(bar.s)), width = pw(dt(bar.s), dt(bar.e));
         const badge = '';
-        const barColor = laneColor(gi);
-        const isTbd = (bar.color === TBD_COLOR);
-        const barStyle = isTbd
-          ? `left:${left};width:${width};background:var(--bg-alt);border:1.5px dashed ${TBD_COLOR};`
-          : `left:${left};width:${width};background:${barColor};`;
-        const txtStyle = isTbd ? ' style="color:#8B6914;"' : '';
+        const displayColor = barDisplayColor(bar, gi);
+        const dotted = isDottedBar(bar);
+        const barStyle = dotted
+          ? `left:${left};width:${width};color:${displayColor};`
+          : `left:${left};width:${width};background:${displayColor};`;
+        const txtStyle = barTextStyle(bar, gi);
         const displayTxt = bar.tip.split('\u00b7')[0].split('.')[0].trim();
-        barsHTML += `<div class="bar" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">
+        barsHTML += `<div class="bar${dotted ? ' is-dotted' : ''}" data-gi="${gi}" data-ri="${ri}" data-bi="${bi}" style="${barStyle}" aria-label="${bar.tip}">
           <span class="bar-txt"${txtStyle}>${displayTxt}</span>${badge}<div class="bar-tip">${bar.tip}</div><div class="brh"></div></div>`;
       });
       rowEl.dataset.gi = gi; rowEl.dataset.ri = ri;
@@ -3355,10 +3514,16 @@ function doUndo() {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeBarMenu();
   if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
     e.preventDefault();
     doUndo();
   }
+});
+
+document.addEventListener('click', closeBarMenu);
+document.addEventListener('contextmenu', (e) => {
+  if (!e.target.closest('.bar')) closeBarMenu();
 });
 
 document.getElementById('undo-btn').addEventListener('mousedown', (e) => {

@@ -1,6 +1,56 @@
 const STATE_PREFIX = 'state/';
 const VALID_KEY = /^gantt-state-[a-z0-9-]+$/;
 
+function gistFileName(key) {
+  return `${key}.json`;
+}
+
+function hasGistStore() {
+  return Boolean(process.env.GANTT_GIST_ID && process.env.GANTT_GITHUB_TOKEN);
+}
+
+async function requestGist(path = '', init = {}) {
+  const res = await fetch(`https://api.github.com/gists/${process.env.GANTT_GIST_ID}${path}`, {
+    ...init,
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${process.env.GANTT_GITHUB_TOKEN}`,
+      'Content-Type': 'application/json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(init.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`GitHub state store failed (${res.status}): ${detail || res.statusText}`);
+  }
+  return res.json();
+}
+
+async function readGistJson(key) {
+  const gist = await requestGist();
+  const file = gist.files?.[gistFileName(key)];
+  if (!file) return null;
+  const content = file.truncated
+    ? await (await fetch(file.raw_url, { cache: 'no-store' })).text()
+    : file.content;
+  return content ? JSON.parse(content) : null;
+}
+
+async function writeGistJson(key, payload) {
+  await requestGist('', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      files: {
+        [gistFileName(key)]: {
+          content: JSON.stringify(payload, null, 2)
+        }
+      }
+    })
+  });
+  return payload;
+}
+
 async function readJsonBody(req) {
   if (req.body) {
     return typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
@@ -55,6 +105,12 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'GET') {
       const key = getKey(req);
+      if (hasGistStore()) {
+        const record = await readGistJson(key);
+        res.statusCode = 200;
+        res.end(JSON.stringify(record || { key, state: null, updatedAt: null }));
+        return;
+      }
       const record = await readBlobJson(`${STATE_PREFIX}${key}.json`);
       res.statusCode = 200;
       res.end(JSON.stringify(record || { key, state: null, updatedAt: null }));
@@ -79,6 +135,12 @@ module.exports = async function handler(req, res) {
         },
         updatedAt
       };
+      if (hasGistStore()) {
+        await writeGistJson(key, record);
+        res.statusCode = 200;
+        res.end(JSON.stringify(record));
+        return;
+      }
       await writeBlobJson(`${STATE_PREFIX}${key}.json`, record);
       res.statusCode = 200;
       res.end(JSON.stringify(record));

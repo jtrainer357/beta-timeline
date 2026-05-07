@@ -5,6 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Nitro · Beta Timeline Hypothesis</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+(function fileModeRecoveryGate() {
+  if (location.protocol !== 'file:') return;
+  window.__NITRO_FILE_MODE__ = true;
+  document.documentElement.classList.add('file-recovery-mode');
+
+  const PROD_ORIGIN = 'https://nitro-gantt.vercel.app';
+  const VALID_TABS = ['jay','cait','rich','syd','mvp','cloudflare','gke','next8'];
+  const tab = VALID_TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mvp';
+  const key = 'gantt-state-' + tab;
+  const localDraftKey = key + '-local-draft';
+  const pendingKey = key + '-cloud-pending';
+  const apiUrl = PROD_ORIGIN + '/api/state';
+
+  function stateHash(state) {
+    return JSON.stringify(state?.groups || state?.barState || []) +
+      JSON.stringify(state?.milestones || state?.msState || []) +
+      JSON.stringify(state?.fnState || []) +
+      (state?.zoom || 1) +
+      JSON.stringify(state?.tabNames || {});
+  }
+
+  function readLocalDraft() {
+    const candidates = [pendingKey, localDraftKey, key].map(candidateKey => {
+      try {
+        const raw = localStorage.getItem(candidateKey);
+        const state = raw ? JSON.parse(raw) : null;
+        return state && (state.groups || state.barState) ? state : null;
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+    return candidates.sort((a, b) => Date.parse(b.saved || '') - Date.parse(a.saved || ''))[0] || null;
+  }
+
+  function setRecoveryStatus(title, detail, retrying) {
+    const titleEl = document.getElementById('file-recovery-title');
+    const detailEl = document.getElementById('file-recovery-detail');
+    const retryBtn = document.getElementById('file-recovery-retry');
+    if (titleEl) titleEl.textContent = title;
+    if (detailEl) detailEl.textContent = detail;
+    if (retryBtn) retryBtn.style.display = retrying ? 'inline-flex' : 'none';
+  }
+
+  async function syncAndRedirect() {
+    try {
+      const state = readLocalDraft();
+      if (!state) {
+        setRecoveryStatus('Opening production workspace', 'No local draft was found here, so this copy is being moved to the live app.', false);
+        location.replace(PROD_ORIGIN + '/#' + tab);
+        return;
+      }
+
+      localStorage.setItem(pendingKey, JSON.stringify(state));
+      setRecoveryStatus('Saving local changes to production', 'Your local draft is being verified before the live app opens.', false);
+      const expectedHash = stateHash(state);
+      const put = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, state }),
+        cache: 'no-store'
+      });
+      if (!put.ok) throw new Error('Production save failed (' + put.status + ')');
+
+      const get = await fetch(apiUrl + '?key=' + encodeURIComponent(key) + '&fresh=1', { cache: 'no-store' });
+      if (!get.ok) throw new Error('Production verification failed (' + get.status + ')');
+      const record = await get.json();
+      if (!record.state || stateHash(record.state) !== expectedHash) {
+        throw new Error('Production verification did not match this local draft.');
+      }
+
+      localStorage.removeItem(pendingKey);
+      setRecoveryStatus('Saved to production', 'Redirecting you to the live workspace now.', false);
+      location.replace(PROD_ORIGIN + '/#' + tab);
+    } catch (err) {
+      console.error('[Gantt] File recovery sync failed.', err);
+      setRecoveryStatus('Changes are safe locally', 'Production sync is still pending. Keep this tab open and retry when the connection is ready.', true);
+    }
+  }
+
+  window.__NITRO_RETRY_FILE_SYNC__ = syncAndRedirect;
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.insertAdjacentHTML('afterbegin', '<div id="file-recovery"><div class="file-recovery-card"><div class="file-recovery-eyebrow">PROJECT NITRO</div><h1 id="file-recovery-title">Preparing production workspace</h1><p id="file-recovery-detail">Checking this local draft before opening the live app.</p><button id="file-recovery-retry" type="button" style="display:none;">Retry production sync</button></div></div>');
+    document.getElementById('file-recovery-retry').addEventListener('click', syncAndRedirect);
+    syncAndRedirect();
+  });
+})();
+</script>
 <style>
 :root {
   /* ── Tebra Brand Palette ──────────────────── */
@@ -42,6 +130,57 @@ body {
   font-size: 13px;
   padding: 32px 36px 58px;
   min-width: 1160px;
+}
+html.file-recovery-mode body {
+  min-width: 0;
+  min-height: 100vh;
+  padding: 0;
+}
+html.file-recovery-mode body > :not(#file-recovery) {
+  display: none !important;
+}
+#file-recovery {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: var(--bg-alt);
+}
+.file-recovery-card {
+  max-width: 520px;
+  border: 1px solid var(--brd);
+  border-radius: 8px;
+  background: white;
+  padding: 30px 32px;
+  box-shadow: 0 14px 42px rgba(0,0,0,.08);
+}
+.file-recovery-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  color: var(--g-mid);
+  margin-bottom: 10px;
+}
+.file-recovery-card h1 {
+  color: var(--g);
+  font-size: 26px;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.file-recovery-card p {
+  color: var(--txt-m);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+.file-recovery-card button {
+  font-family: 'IBM Plex Mono', monospace;
+  border: 1px solid var(--g);
+  color: white;
+  background: var(--g);
+  border-radius: 100px;
+  padding: 8px 16px;
+  cursor: pointer;
 }
 
 /* ── HEADER ───────────────────────────────── */
@@ -847,6 +986,9 @@ body {
 </div>
 
 <script>
+if (window.__NITRO_FILE_MODE__) {
+  throw new Error('Nitro Gantt file-mode recovery is active. Open https://nitro-gantt.vercel.app for editing.');
+}
 // ── CONFIGURATION ─────────────────────────────────
 const START   = new Date('2026-03-03');
 const END     = new Date('2026-12-31');
@@ -3200,9 +3342,13 @@ const TAB_STATE_REVISIONS = { gke: '2026-05-02-vincent-restore' };
 // ── STORAGE LAYER ──────────────────────────────────
 const STATE_API = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app/api/state' : '/api/state';
 let _cloudAvailable = true;
+const CLOUD_RETRY_BASE_MS = 5000;
+const CLOUD_RETRY_MAX_MS = 60000;
+const CLOUD_POLL_MS = 30000;
 
 function storageKey(tab = activeTab) { return 'gantt-state-' + tab; }
 function localDraftKey(key = storageKey()) { return key + '-local-draft'; }
+function cloudPendingKey(key = storageKey()) { return key + '-cloud-pending'; }
 function savedTime(state) { return Date.parse(state?.saved || '') || 0; }
 function tabFromStorageKey(key = storageKey()) { return key.replace(/^gantt-state-/, '').replace(/-local-draft$/, ''); }
 function stateMatchesCurrentRevision(state, tab = activeTab) {
@@ -3227,52 +3373,108 @@ function saveLocalState(state, key = storageKey()) {
   } catch { return false; }
 }
 
-function stateApiUrl(key = storageKey()) {
-  return `${STATE_API}?key=${encodeURIComponent(key)}`;
+function loadCloudPendingState(key = storageKey()) {
+  try {
+    const raw = localStorage.getItem(cloudPendingKey(key));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
 
-async function loadCloudState(key = storageKey()) {
-  const res = await fetch(stateApiUrl(key), { cache: 'no-store' });
+function markCloudPending(state, key = storageKey()) {
+  try {
+    localStorage.setItem(cloudPendingKey(key), JSON.stringify(state));
+    _needsCloudSync = true;
+    return true;
+  } catch { return false; }
+}
+
+function clearCloudPending(key = storageKey()) {
+  try { localStorage.removeItem(cloudPendingKey(key)); } catch {}
+  _needsCloudSync = false;
+}
+
+function bestLocalState(key = storageKey()) {
+  const pending = loadCloudPendingState(key);
+  const local = loadLocalState(key);
+  if (pending && local) return savedTime(pending) >= savedTime(local) ? pending : local;
+  return pending || local;
+}
+
+function stateApiUrl(key = storageKey(), options = {}) {
+  const fresh = options.fresh ? '&fresh=1' : '';
+  return `${STATE_API}?key=${encodeURIComponent(key)}${fresh}`;
+}
+
+async function loadCloudState(key = storageKey(), options = {}) {
+  const res = await fetch(stateApiUrl(key, options), { cache: 'no-store' });
   if (!res.ok) throw new Error(`Cloud load failed (${res.status})`);
   const payload = await res.json();
   return payload?.state || null;
 }
 
-async function saveCloudState(state, key = storageKey()) {
+async function writeCloudState(state, key = storageKey(), options = {}) {
   const res = await fetch(STATE_API, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key, state }),
-    cache: 'no-store'
+    cache: 'no-store',
+    keepalive: Boolean(options.keepalive)
   });
   if (!res.ok) throw new Error(`Cloud save failed (${res.status})`);
   const payload = await res.json();
   return payload?.state || state;
 }
 
+async function saveCloudState(state, key = storageKey()) {
+  const cloudState = await writeCloudState(state, key);
+  const verified = await loadCloudState(key, { fresh: true });
+  if (!verified) throw new Error('Cloud verification failed: no saved state returned.');
+  if (hashState(verified) !== hashState(cloudState)) {
+    throw new Error('Cloud verification failed: saved state did not match.');
+  }
+  return verified;
+}
+
 async function loadState() {
   const key = storageKey();
-  const localState = loadLocalState(key);
+  const localState = bestLocalState(key);
   try {
     let remoteState = await loadCloudState(key);
     _cloudAvailable = true;
     if (remoteState && !stateMatchesCurrentRevision(remoteState, activeTab)) remoteState = null;
-    if (remoteState) {
-      saveLocalState(remoteState, key);
-      _needsCloudSync = false;
+    if (localState && !stateMatchesCurrentRevision(localState, activeTab)) {
       return remoteState;
     }
-    if (localState) _needsCloudSync = true;
-    return localState || remoteState;
+    if (localState && (!remoteState || savedTime(localState) > savedTime(remoteState))) {
+      saveLocalState(localState, key);
+      markCloudPending(localState, key);
+      try {
+        const synced = await saveCloudState(localState, key);
+        saveLocalState(synced, key);
+        clearCloudPending(key);
+        noteCloudSuccess();
+      } catch (syncErr) {
+        noteCloudFailure(syncErr);
+      }
+      return localState;
+    }
+    if (remoteState) {
+      saveLocalState(remoteState, key);
+      clearCloudPending(key);
+      return remoteState;
+    }
+    if (localState) markCloudPending(localState, key);
+    return localState;
   } catch (err) {
     _cloudAvailable = false;
     console.warn('[Gantt] Cloud load failed; using local draft if available.', err);
+    if (localState) markCloudPending(localState, key);
     return localState;
   }
 }
 
 function loadStateWithTimeout(ms = 2500) {
-  const localState = loadLocalState();
+  const localState = bestLocalState();
   return Promise.race([
     loadState(),
     new Promise(resolve => setTimeout(() => resolve(localState), ms))
@@ -3282,14 +3484,17 @@ function loadStateWithTimeout(ms = 2500) {
 async function saveState(state) {
   const key = storageKey();
   const localOk = saveLocalState(state, key);
+  if (localOk) markCloudPending(state, key);
   try {
     const cloudState = await saveCloudState(state, key);
     _cloudAvailable = true;
     saveLocalState(cloudState, key);
+    clearCloudPending(key);
+    noteCloudSuccess();
     return { ok: true, local: localOk, cloud: true, state: cloudState };
   } catch (err) {
     _cloudAvailable = false;
-    console.error('[Gantt] Cloud save failed; local draft is preserved.', err);
+    noteCloudFailure(err);
     return { ok: localOk, local: localOk, cloud: false, error: err };
   }
 }
@@ -3298,8 +3503,22 @@ const saveInd = document.getElementById('save-ind');
 let _saveTimer = null;
 let _pollTimer = null;
 let _lastSavedHash = '';
-let _needsCloudSync = false;
-let _lastCloudRetry = 0;
+let _needsCloudSync = Boolean(loadCloudPendingState());
+let _cloudRetryDelay = CLOUD_RETRY_BASE_MS;
+let _nextCloudRetryAt = 0;
+
+function noteCloudSuccess() {
+  _cloudAvailable = true;
+  _cloudRetryDelay = CLOUD_RETRY_BASE_MS;
+  _nextCloudRetryAt = 0;
+}
+
+function noteCloudFailure(err) {
+  _cloudAvailable = false;
+  _nextCloudRetryAt = Date.now() + _cloudRetryDelay;
+  _cloudRetryDelay = Math.min(_cloudRetryDelay * 2, CLOUD_RETRY_MAX_MS);
+  console.error('[Gantt] Cloud sync failed; local draft is preserved and will retry.', err);
+}
 
 function readEditableText(el) {
   const field = el?.querySelector?.('input, textarea');
@@ -3371,9 +3590,27 @@ function saveLocalDraftNow() {
   const ok = saveLocalState(state);
   if (ok) {
     _lastSavedHash = hashState(state);
-    _needsCloudSync = true;
+    markCloudPending(state);
   }
   return ok;
+}
+
+function flushCloudOnUnload() {
+  if (!currentGroups || !currentMilestones) return false;
+  const key = storageKey();
+  const state = getState();
+  const localOk = saveLocalState(state, key);
+  if (localOk) markCloudPending(state, key);
+  try {
+    fetch(STATE_API, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, state }),
+      cache: 'no-store',
+      keepalive: true
+    }).catch(() => {});
+  } catch {}
+  return localOk;
 }
 
 function applyState(state) {
@@ -3440,9 +3677,9 @@ async function doSave() {
     _lastSavedHash = h;
     const t = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     _needsCloudSync = !result.cloud;
-    saveInd.textContent = _needsCloudSync ? '\u26a0 Saved locally' : '\u2713 Saved '+t;
+    saveInd.textContent = _needsCloudSync ? '\u26a0 Cloud sync pending' : '\u2713 Saved to production '+t;
     saveInd.className = _needsCloudSync ? 'save-ind error' : 'save-ind saved';
-    if (!_needsCloudSync) setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 3000);
+    if (!_needsCloudSync) setTimeout(() => { saveInd.textContent='\u2713 Saved to production'; saveInd.className='save-ind'; }, 3000);
   } else {
     saveInd.textContent='\u2715 Save failed'; saveInd.className='save-ind error';
   }
@@ -3453,10 +3690,11 @@ async function pollForChanges() {
   if (_isDraggingTimelineItem) return;
   if (_saveTimer) return;
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
-  if (_needsCloudSync && Date.now() - _lastCloudRetry > 5000) {
-    _lastCloudRetry = Date.now();
-    await doSave();
-    if (_needsCloudSync) return;
+  if (_needsCloudSync) {
+    if (Date.now() >= _nextCloudRetryAt) {
+      await doSave();
+    }
+    return;
   }
   const state = await loadStateWithTimeout();
   if (!state) return;
@@ -3465,7 +3703,7 @@ async function pollForChanges() {
     applyState(state);
     frameDefaultTimelineWindow();
     saveInd.textContent='\u21bb Synced'; saveInd.className='save-ind synced';
-    setTimeout(() => { saveInd.textContent='\u2713 Saved'; saveInd.className='save-ind'; }, 2000);
+    setTimeout(() => { saveInd.textContent='\u2713 Saved to production'; saveInd.className='save-ind'; }, 2000);
   }
 }
 
@@ -3473,16 +3711,16 @@ let _initialLoadDone = false;
 document.addEventListener('mouseup', () => { if (_initialLoadDone && _saveTimer===null) setTimeout(schedSave, 200); });
 window.addEventListener('beforeunload', () => {
   clearTimeout(_saveTimer);
-  saveLocalDraftNow();
+  flushCloudOnUnload();
 });
 window.addEventListener('pagehide', () => {
   clearTimeout(_saveTimer);
-  saveLocalDraftNow();
+  flushCloudOnUnload();
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && _initialLoadDone) {
     clearTimeout(_saveTimer);
-    saveLocalDraftNow();
+    flushCloudOnUnload();
   }
 });
 
@@ -3495,15 +3733,18 @@ async function switchTab(tab) {
   activeTab = tab;
   location.hash = tab;
   _lastSavedHash = '';
+  _needsCloudSync = Boolean(loadCloudPendingState());
+  _cloudRetryDelay = CLOUD_RETRY_BASE_MS;
+  _nextCloudRetryAt = 0;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
   renderChart(tab);
   renderHeader(tab);
   renderFootnotes(tab);
-  const localState = loadLocalState();
+  const localState = bestLocalState();
   if (localState) applyState(localState);
   _lastSavedHash = hashState(localState || getState());
   frameDefaultTimelineWindow();
-  saveInd.textContent='\u2713 Loaded'; saveInd.className='save-ind saved';
+  saveInd.textContent=_needsCloudSync ? '\u26a0 Cloud sync pending' : '\u2713 Loaded'; saveInd.className=_needsCloudSync ? 'save-ind error' : 'save-ind saved';
   const baselineHash = _lastSavedHash;
   loadStateWithTimeout().then(state => {
     if (!state || _needsCloudSync || _lastSavedHash !== baselineHash) return;
@@ -3523,7 +3764,7 @@ renderChart(activeTab);
 renderHeader(activeTab);
 renderFootnotes(activeTab);
 
-const localInitialState = loadLocalState();
+const localInitialState = bestLocalState();
 if (localInitialState) applyState(localInitialState);
 _lastSavedHash = hashState(localInitialState || getState());
 frameDefaultTimelineWindow();
@@ -3534,7 +3775,7 @@ loadStateWithTimeout().then(state => {
     _lastSavedHash = hashState(state);
     frameDefaultTimelineWindow();
   }
-  _pollTimer = setInterval(pollForChanges, 1200);
+  _pollTimer = setInterval(pollForChanges, CLOUD_POLL_MS);
 });
 
 // ── EDITABLE TAB NAMES ──────────────────────────────

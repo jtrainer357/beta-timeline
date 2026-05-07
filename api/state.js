@@ -1,5 +1,18 @@
 const STATE_PREFIX = 'state/';
 const VALID_KEY = /^gantt-state-[a-z0-9-]+$/;
+const READ_CACHE_TTL_MS = 15000;
+const readCache = new Map();
+
+function getCachedRecord(key) {
+  const cached = readCache.get(key);
+  if (!cached || Date.now() - cached.cachedAt > READ_CACHE_TTL_MS) return null;
+  return cached.record;
+}
+
+function setCachedRecord(key, record) {
+  readCache.set(key, { record, cachedAt: Date.now() });
+  return record;
+}
 
 function gistFileName(key) {
   return `${key}.json`;
@@ -27,14 +40,16 @@ async function requestGist(path = '', init = {}) {
   return res.json();
 }
 
-async function readGistJson(key) {
+async function readGistJson(key, options = {}) {
+  const cached = options.bypassCache ? null : getCachedRecord(key);
+  if (cached) return cached;
   const gist = await requestGist();
   const file = gist.files?.[gistFileName(key)];
   if (!file) return null;
   const content = file.truncated
     ? await (await fetch(file.raw_url, { cache: 'no-store' })).text()
     : file.content;
-  return content ? JSON.parse(content) : null;
+  return content ? setCachedRecord(key, JSON.parse(content)) : null;
 }
 
 async function writeGistJson(key, payload) {
@@ -48,7 +63,7 @@ async function writeGistJson(key, payload) {
       }
     })
   });
-  return payload;
+  return setCachedRecord(key, payload);
 }
 
 async function readJsonBody(req) {
@@ -60,12 +75,14 @@ async function readJsonBody(req) {
   return raw ? JSON.parse(raw) : {};
 }
 
-async function readBlobJson(pathname) {
+async function readBlobJson(pathname, options = {}) {
+  const cached = options.bypassCache ? null : getCachedRecord(pathname);
+  if (cached) return cached;
   const { get } = await import('@vercel/blob');
   const result = await get(pathname, { access: 'private', useCache: false });
   if (!result || result.statusCode === 304 || !result.stream) return null;
   const text = await new Response(result.stream).text();
-  return text ? JSON.parse(text) : null;
+  return text ? setCachedRecord(pathname, JSON.parse(text)) : null;
 }
 
 async function writeBlobJson(pathname, payload) {
@@ -105,13 +122,15 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'GET') {
       const key = getKey(req);
+      const url = new URL(req.url, `https://${req.headers.host || 'nitro-gantt.vercel.app'}`);
+      const bypassCache = url.searchParams.get('fresh') === '1';
       if (hasGistStore()) {
-        const record = await readGistJson(key);
+        const record = await readGistJson(key, { bypassCache });
         res.statusCode = 200;
         res.end(JSON.stringify(record || { key, state: null, updatedAt: null }));
         return;
       }
-      const record = await readBlobJson(`${STATE_PREFIX}${key}.json`);
+      const record = await readBlobJson(`${STATE_PREFIX}${key}.json`, { bypassCache });
       res.statusCode = 200;
       res.end(JSON.stringify(record || { key, state: null, updatedAt: null }));
       return;
@@ -142,6 +161,7 @@ module.exports = async function handler(req, res) {
         return;
       }
       await writeBlobJson(`${STATE_PREFIX}${key}.json`, record);
+      setCachedRecord(`${STATE_PREFIX}${key}.json`, record);
       res.statusCode = 200;
       res.end(JSON.stringify(record));
       return;

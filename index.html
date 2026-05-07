@@ -802,6 +802,36 @@ html.file-recovery-mode body > :not(#file-recovery) {
 }
 .undo-btn:hover { color: var(--g); border-color: var(--g); }
 .undo-btn:active { background: var(--g-pale); }
+.viewer-presence {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--g);
+  background: white;
+  border: 1px solid var(--brd);
+  border-radius: 100px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 48px;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transition: all .2s;
+}
+.viewer-presence.offline {
+  color: var(--txt-s);
+  border-color: var(--brd);
+}
+.viewer-presence svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .save-ind {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10.5px;
@@ -981,6 +1011,10 @@ html.file-recovery-mode body > :not(#file-recovery) {
 </div>
 
 <div class="top-actions">
+  <div class="viewer-presence offline" id="viewer-presence" title="Other people currently viewing">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="viewer-count">0</span>
+  </div>
   <button class="undo-btn" id="undo-btn" title="Undo (Cmd+Z)">&#8617; Undo</button>
   <div class="save-ind" id="save-ind">Auto-saved</div>
 </div>
@@ -3339,6 +3373,59 @@ let tabNames = { jay:'Jay', cait:'Cait', rich:'Rich', syd:'Beta (Revised)', mvp:
 let activeTab = validTabs.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mvp';
 const TAB_STATE_REVISIONS = { gke: '2026-05-02-vincent-restore' };
 
+// ── VIEWER PRESENCE ─────────────────────────────────
+const PRESENCE_API = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app/api/presence' : '/api/presence';
+const PRESENCE_INTERVAL_MS = 15000;
+const PRESENCE_CLIENT_KEY = 'nitro-presence-client-id';
+let _presenceTimer = null;
+
+function presenceClientId() {
+  try {
+    let id = localStorage.getItem(PRESENCE_CLIENT_KEY);
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : `viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g, '');
+      localStorage.setItem(PRESENCE_CLIENT_KEY, id);
+    }
+    return id;
+  } catch {
+    return `viewer-${Math.random().toString(36).slice(2)}`;
+  }
+}
+
+function setViewerCount(count, online = true) {
+  const badge = document.getElementById('viewer-presence');
+  const value = document.getElementById('viewer-count');
+  if (!badge || !value) return;
+  value.textContent = String(Math.max(0, count || 0));
+  badge.classList.toggle('offline', !online);
+  badge.title = online
+    ? `${Math.max(0, count || 0)} other viewer${count === 1 ? '' : 's'} currently in the app`
+    : 'Viewer count unavailable';
+}
+
+async function updatePresence() {
+  try {
+    const res = await fetch(PRESENCE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId: presenceClientId(), tab: activeTab }),
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error(`Presence failed (${res.status})`);
+    const payload = await res.json();
+    setViewerCount(payload.count, true);
+  } catch (err) {
+    console.warn('[Gantt] Viewer presence unavailable.', err);
+    setViewerCount(0, false);
+  }
+}
+
+function startPresence() {
+  updatePresence();
+  clearInterval(_presenceTimer);
+  _presenceTimer = setInterval(updatePresence, PRESENCE_INTERVAL_MS);
+}
+
 // ── STORAGE LAYER ──────────────────────────────────
 const STATE_API = location.protocol === 'file:' ? 'https://nitro-gantt.vercel.app/api/state' : '/api/state';
 let _cloudAvailable = true;
@@ -3721,6 +3808,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && _initialLoadDone) {
     clearTimeout(_saveTimer);
     flushCloudOnUnload();
+  } else if (document.visibilityState === 'visible') {
+    updatePresence();
   }
 });
 
@@ -3777,6 +3866,7 @@ loadStateWithTimeout().then(state => {
   }
   _pollTimer = setInterval(pollForChanges, CLOUD_POLL_MS);
 });
+startPresence();
 
 // ── EDITABLE TAB NAMES ──────────────────────────────
 document.querySelectorAll('.tab').forEach(tabEl => {
